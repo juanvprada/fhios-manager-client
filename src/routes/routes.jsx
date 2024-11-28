@@ -1,6 +1,8 @@
+// routes.jsx
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "../layout/Layout";
 import Projects from "../pages/Projects";
+import NewProject from "../pages/newProjects";
 
 export const router = createBrowserRouter([
   {
@@ -15,14 +17,14 @@ export const router = createBrowserRouter([
         path: "proyectos",
         element: <Projects />,
       },
-      
       {
-        path: "usuarios",
-        element: <h1 className="text-2xl font-poppins">Gestión de Usuarios</h1>,
+        path: "proyectos/nuevo",  
+        element: <NewProject />,
       },
     ],
   },
 ]);
+
 
 
 

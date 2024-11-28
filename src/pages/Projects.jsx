@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom"
 import useFilteredProjects from "../hooks/useFilteredProjects";
 
 const Projects = () => {
@@ -13,6 +14,15 @@ const Projects = () => {
         Proyectos
       </h1>
       <br />
+       {/* Botón para crear nuevo proyecto */}
+       <div className="w-full max-w-xl flex justify-end mb-4">
+        <Link
+          to="/proyectos/nuevo"  // Ruta correcta para navegar a NewProject
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg font-poppins hover:bg-blue-600 transition-colors"
+        >
+          Crear Nuevo Proyecto
+        </Link>
+      </div>
 
       {/* Search and Sort Controls */}
       <div className="flex flex-col md:flex-row gap-4 mb-6 w-full max-w-xl">
