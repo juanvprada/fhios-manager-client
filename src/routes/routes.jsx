@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "../layout/Layout";
 import Projects from "../pages/Projects";
+import GestionUsuarios from "../pages/GestionUsuarios";
 
 export const router = createBrowserRouter([
   {
@@ -15,10 +16,17 @@ export const router = createBrowserRouter([
         path: "proyectos",
         element: <Projects />,
       },
-      
+      {
+        path: "nuevo-proyecto",
+        element: (
+          <h1 className="text-2xl font-poppins">
+            Formulario para crear un nuevo proyecto
+          </h1>
+        ),
+      },
       {
         path: "usuarios",
-        element: <h1 className="text-2xl font-poppins">Gestión de Usuarios</h1>,
+        element: <GestionUsuarios />,
       },
     ],
   },
