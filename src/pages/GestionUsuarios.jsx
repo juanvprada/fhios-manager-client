@@ -23,14 +23,14 @@ const GestionUsuarios = () => {
     };
 
   return (
-    <div className="p-6 md:ml-64 flex flex-col items-center justify-center">
+    <div className="p-4 sm:p-6 md:ml-64 flex flex-col items-center justify-center">
       <h1 className="text-2xl text-center font-poppins font-bold text-primary-500 mb-4">
         Gestión de Usuarios
       </h1>
       <br />
 
       {/* Controles de búsqueda y ordenamiento */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6 w-full max-w-xl">
+      <div className="flex flex-col sm:flex-row gap-4 mb-6 w-full max-w-xl">
         <div className="relative flex-1">
           <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
@@ -58,16 +58,16 @@ const GestionUsuarios = () => {
           <table className="w-full">
             <thead className="bg-primary-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
                   Usuario
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
                   Role
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
                   Fecha de creación
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
                   Acciones
                 </th>
               </tr>
@@ -75,7 +75,7 @@ const GestionUsuarios = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div>
                         <div className="text-sm font-medium text-gray-900">{user.name}</div>
@@ -83,7 +83,7 @@ const GestionUsuarios = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                       ${user.role === 'Project Manager' ? 'bg-green-100 text-green-800' : 
                         user.role === 'Tech Leader' ? 'bg-blue-100 text-blue-800' : 
@@ -91,10 +91,10 @@ const GestionUsuarios = () => {
                       {user.role}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {user.createdAt.toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => {
@@ -123,7 +123,7 @@ const GestionUsuarios = () => {
       {/* Modal para cambiar rol */}
       {showRoleModal && selectedUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-sm w-full mx-4">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Cambiar rol de usuario
             </h3>
