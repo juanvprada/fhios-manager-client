@@ -1,51 +1,36 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import useStore from '../store/store.js';
-import axios from 'axios';
+
 
 const RegisterForm = () => {
     const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
   
-    // Gestión de estado global
-    const setToken = useStore((state) => state.setToken);
-    const setRole = useStore((state) => state.setRole);
-    const setUserName = useStore((state) => state.setUsername);
-    const navigate = useNavigate();
-
     const handleSubmit = async (e) => {
         e.preventDefault();
     
-        if (!username || !password) {
-          setError('Por favor, completa todos los campos.');
-          return;
-        }
-    
-        try {
-          const response = await axios.post('http://localhost:5000/api/auth/login', { 
-            username, 
-            password 
-          });
-    
-          const { token, role, name } = response.data;
-    
-          if (token) {
-            // Almacenar datos en estado global
-            setToken(token);
-            setRole(role);
-            setUserName(name);
-    
-            // Redirigir según el rol
-            navigate(role === 'admin' ? '/admin-dashboard' : '/dashboard');
-          } else {
-            setError('Nombre de usuario o contraseña incorrectos.');
+        if (!username || !email || !password || !confirmPassword) {
+            setError('Por favor, completa todos los campos.');
+            return;
           }
-        } catch (error) {
-          console.error('Error de autenticación:', error);
-          setError('No se recibió respuesta del servidor.');
-        }
-      };
+      
+          if (password !== confirmPassword) {
+            setError('Las contraseñas no coinciden.');
+            return;
+          }
+      
+          if (password.length < 8) {
+            setError('La contraseña debe tener al menos 8 caracteres.');
+            return;
+          }
+      
+          console.log('Registration data:', { username, email, password });
+      
+          setError('Registro exitoso. Redirigiendo...');
+        };
+     
 };
 
 export default RegisterForm;
