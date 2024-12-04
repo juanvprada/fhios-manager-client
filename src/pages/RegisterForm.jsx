@@ -96,6 +96,24 @@ const RegisterForm = () => {
             />
           </div>
 
+          <div>
+            <label 
+              htmlFor="confirm-password" 
+              className="block text-red-500 font-medium mb-2"
+            >
+              Confirmar Contraseña:
+            </label>
+            <input
+              type="password"
+              id="confirm-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full border-2 border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-red-200"
+              placeholder="Repite la contraseña"
+              required
+            />
+          </div>
+
         </form>
       </div>
     </div>
