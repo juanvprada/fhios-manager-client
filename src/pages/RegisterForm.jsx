@@ -55,10 +55,29 @@ const RegisterForm = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full border-2 border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-red-200"
-              placeholder="Elige un nombre de usuario"
+              placeholder="Nombre de usuario"
               required
             />
           </div>
+          
+          <div>
+            <label 
+              htmlFor="email" 
+              className="block text-red-500 font-medium mb-2"
+            >
+              Correo Electrónico:
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border-2 border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-red-200"
+              placeholder="Correo electrónico"
+              required
+            />
+          </div>
+
         </form>
       </div>
     </div>
