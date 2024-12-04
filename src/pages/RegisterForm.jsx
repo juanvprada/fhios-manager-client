@@ -13,8 +13,6 @@ const RegisterForm = () => {
     const setRole = useStore((state) => state.setRole);
     const setUserName = useStore((state) => state.setUsername);
     const navigate = useNavigate();
-
 };
-
 
 export default RegisterForm;
