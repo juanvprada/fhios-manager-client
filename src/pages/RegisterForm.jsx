@@ -114,6 +114,18 @@ const RegisterForm = () => {
             />
           </div>
 
+          {error && (
+            <p className="text-red-500 text-center mt-2">
+              {error}
+            </p>
+          )}
+          
+          <button
+            type="submit"
+            className="w-full bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition duration-300"
+          >
+            Registrar usuario
+          </button>
         </form>
       </div>
     </div>
