@@ -40,6 +40,26 @@ const RegisterForm = () => {
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-4">
           Registro de Usuario
         </h2>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label 
+              htmlFor="username" 
+              className="block text-red-500 font-medium mb-2"
+            >
+              Nombre de Usuario:
+            </label>
+            <input
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full border-2 border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-red-200"
+              placeholder="Elige un nombre de usuario"
+              required
+            />
+          </div>
+        </form>
       </div>
     </div>
   );
