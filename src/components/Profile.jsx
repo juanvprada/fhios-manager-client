@@ -1,14 +1,13 @@
-import { useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useState } from 'react';   
 import { userService } from '../services'; // Importa el servicio de usuario
 
 const Profile = () => {
-  const { onLogout } = useOutletContext();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   // Retrieve user info from localStorage
   const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
@@ -17,21 +16,24 @@ const Profile = () => {
     e.preventDefault();
     setError('');
     setMessage('');
+    setLoading(true);
 
-    // Basic validation
+    // Validación básica
     if (newPassword !== confirmPassword) {
       setError('Las contraseñas no coinciden.');
+      setLoading(false);
       return;
     }
 
     if (newPassword.length < 8) {
       setError('La contraseña debe tener al menos 8 caracteres.');
+      setLoading(false);
       return;
     }
 
     try {
       // Llamada al servicio de cambio de contraseña
-      const response = await userService.changePassword(currentPassword, newPassword);
+      await userService.changePassword(currentPassword, newPassword);
       setMessage('Contraseña cambiada exitosamente.');
       
       // Limpiar los campos de entrada
@@ -40,6 +42,8 @@ const Profile = () => {
       setConfirmPassword('');
     } catch (err) {
       setError(err.message || 'Error al cambiar la contraseña');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,12 +53,13 @@ const Profile = () => {
         Perfil de Usuario
       </h2>
 
-      {/* User Information Section */}
+      {/* Información del usuario */}
       <div className="mb-6 text-center">
         <p className="text-gray-700">Nombre: {userInfo.name || 'Usuario'}</p>
         <p className="text-gray-700">Email: {userInfo.email || 'usuario@ejemplo.com'}</p>
       </div>
 
+      {/* Formulario de cambio de contraseña */}
       <form onSubmit={handlePasswordChange} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">
@@ -96,22 +101,19 @@ const Profile = () => {
         {error && <p className="text-sm text-red-500">{error}</p>}
         {message && <p className="text-sm text-green-500">{message}</p>}
 
-        <button
-          type="submit"
-          className="w-full bg-primaryRed text-white py-2 rounded-md hover:bg-red-700 transition duration-300"
-        >
-          Guardar Cambios
-        </button>
+        <div>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full p-2 rounded-md bg-primaryRed text-white ${loading ? 'opacity-50' : ''}`}
+          >
+            {loading ? 'Cargando...' : 'Cambiar Contraseña'}
+          </button>
+        </div>
       </form>
-
-      <button
-        onClick={onLogout}
-        className="w-full mt-4 bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition duration-300"
-      >
-        Cerrar Sesión
-      </button>
     </div>
   );
 };
 
 export default Profile;
+
