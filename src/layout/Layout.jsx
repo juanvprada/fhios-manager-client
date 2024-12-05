@@ -1,4 +1,3 @@
-// src/components/layout/Layout.jsx
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 

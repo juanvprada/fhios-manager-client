@@ -1,11 +1,9 @@
-// src/pages/Profile.jsx
 import { useState } from 'react';
-import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useOutletContext } from 'react-router-dom';
+import { userService } from '../services'; // Importa el servicio de usuario
 
 const Profile = () => {
   const { onLogout } = useOutletContext();
-  const navigate = useNavigate();
-
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -32,10 +30,11 @@ const Profile = () => {
     }
 
     try {
-      // TODO: Implement actual password change API call
-      // const response = await changePasswordService(currentPassword, newPassword);
-      
+      // Llamada al servicio de cambio de contraseña
+      const response = await userService.changePassword(currentPassword, newPassword);
       setMessage('Contraseña cambiada exitosamente.');
+      
+      // Limpiar los campos de entrada
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
