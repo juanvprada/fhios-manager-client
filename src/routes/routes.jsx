@@ -1,7 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "../layout/Layout";
 import Projects from "../pages/Projects";
-import GestionUsuarios from "../pages/GestionUsuarios";
+import UserManagement from "../pages/UserManagement";
+import NewProject from "../pages/newProject";
+import RegisterForm from "../pages/RegisterForm";
 
 export const router = createBrowserRouter([
   {
@@ -13,20 +15,20 @@ export const router = createBrowserRouter([
         element: <h1 className="text-2xl font-poppins">Inicio</h1>,
       },
       {
+        path: "registerform",
+        element: <RegisterForm />,
+      },
+      {
         path: "proyectos",
         element: <Projects />,
       },
       {
-        path: "nuevo-proyecto",
-        element: (
-          <h1 className="text-2xl font-poppins">
-            Formulario para crear un nuevo proyecto
-          </h1>
-        ),
+        path: "proyectos/nuevo",
+        element: <NewProject /> ,
       },
       {
         path: "usuarios",
-        element: <GestionUsuarios />,
+        element: <UserManagement />,
       },
     ],
   },

@@ -1,26 +1,21 @@
 import React from 'react';
 import { FiSearch, FiEdit2, FiTrash2, FiUserCheck } from 'react-icons/fi';
-import useFilteredUsers from '../hooks/useFilteredUsers';
 import useUserManagement from '../hooks/useUserManagement';
 
-const GestionUsuarios = () => {
-    const [searchTerm, setSearchTerm] = React.useState("");
-    const [sortOrder, setSortOrder] = React.useState("asc");
-    const [showRoleModal, setShowRoleModal] = React.useState(false);
-    const [selectedUser, setSelectedUser] = React.useState(null);
-    
-    const { filteredUsers, updateUserRole, deleteUser } = useFilteredUsers(searchTerm, sortOrder);
-  
-    const handleRoleChange = (userId, newRole) => {
-      updateUserRole(userId, newRole);
-      setShowRoleModal(false);
-    };
-  
-    const handleDeleteUser = (userId) => {
-      if (window.confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
-        deleteUser(userId);
-      }
-    };
+const UserManagement = () => {
+  const {
+    searchTerm,
+    setSearchTerm,
+    sortOrder,
+    setSortOrder,
+    selectedUser,
+    setSelectedUser,
+    showRoleModal,
+    setShowRoleModal,
+    filteredUsers,
+    handleRoleChange,
+    handleDeleteUser
+  } = useUserManagement();
 
   return (
     <div className="p-4 sm:p-6 md:ml-64 flex flex-col items-center justify-center">
@@ -156,4 +151,4 @@ const GestionUsuarios = () => {
   );
 };
 
-export default GestionUsuarios;
+export default UserManagement;

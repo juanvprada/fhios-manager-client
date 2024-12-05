@@ -1,30 +1,37 @@
-// hooks/useUserManagement.js
 import { useState, useCallback } from "react";
+import useFilteredUsers from './useFilteredUsers';
 
 const useUserManagement = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
   const [selectedUser, setSelectedUser] = useState(null);
   const [showRoleModal, setShowRoleModal] = useState(false);
 
-  const handleDeleteUser = useCallback((userId) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
-      // Aquí irá la lógica de eliminación cuando tengamoss la BD
-      console.log(`Eliminar usuario ${userId}`);
-    }
-  }, []);
+  const { filteredUsers, updateUserRole, deleteUser } = useFilteredUsers(searchTerm, sortOrder);
 
   const handleRoleChange = useCallback((userId, newRole) => {
-    // Aquí irá la lógica de actualización cuando tengamoss la BD
-    console.log(`Cambiar rol del usuario ${userId} a ${newRole}`);
+    updateUserRole(userId, newRole);
     setShowRoleModal(false);
-  }, []);
+  }, [updateUserRole]);
+
+  const handleDeleteUser = useCallback((userId) => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
+      deleteUser(userId);
+    }
+  }, [deleteUser]);
 
   return {
+    searchTerm,
+    setSearchTerm,
+    sortOrder,
+    setSortOrder,
     selectedUser,
     setSelectedUser,
     showRoleModal,
     setShowRoleModal,
-    handleDeleteUser,
-    handleRoleChange
+    filteredUsers,
+    handleRoleChange,
+    handleDeleteUser
   };
 };
 

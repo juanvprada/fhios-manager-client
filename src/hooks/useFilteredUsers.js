@@ -1,4 +1,3 @@
-// hooks/useFilteredUsers.js
 import { useMemo, useState } from "react";
 
 // Mock data inicial
