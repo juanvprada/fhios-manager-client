@@ -1,16 +1,34 @@
-import { Outlet } from 'react-router-dom';
-import { useState } from 'react';
+// src/components/layout/Layout.jsx
+import { Outlet, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 const Layout = () => {
-    const [username, setUsername] = useState(localStorage.getItem('name') || '');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
 
-    return (
-        <>
-            
-            <Outlet context={{ setUsername }} />
-            
-        </>
-    );
+  useEffect(() => {
+    // Check if user is logged in (you might want to use a more robust auth check)
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+  }, []);
+
+  const handleLogout = () => {
+    // Clear authentication-related items
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    // Reset authentication state
+    setIsAuthenticated(false);
+    
+    // Redirect to login page
+    navigate('/login');
+  };
+
+  return (
+    <div className="min-h-screen">
+      <Outlet context={{ onLogout: handleLogout, isAuthenticated }} />
+    </div>
+  );
 };
 
 export default Layout;
