@@ -4,46 +4,56 @@ import useStore from '../store/store.js';
 import axios from 'axios';
 
 const LoginForm = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  // Gestión de estado global
-  const setToken = useStore((state) => state.setToken);
-  const setRole = useStore((state) => state.setRole);
-  const setUserName = useStore((state) => state.setUsername);
+  // Obtenemos la función login del store
+  const login = useStore((state) => state.login);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!username || !password) {
+  
+    if (!email || !password) {
       setError('Por favor, completa todos los campos.');
       return;
     }
-
+  
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', { 
-        username, 
+      const response = await axios.post('http://localhost:3000/api/auth/login', { 
+        email, 
         password 
       });
-
-      const { token, role, name } = response.data;
-
-      if (token) {
-        // Almacenar datos en estado global
-        setToken(token);
-        setRole(role);
-        setUserName(name);
-
-        // Redirigir según el rol
-        navigate(role === 'admin' ? '/admin-dashboard' : '/dashboard');
+  
+      if (response.data.token) {
+        const token = response.data.token;
+        
+        // Configurar axios
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        try {
+          const userResponse = await axios.get('http://localhost:3000/api/auth/profile');
+          console.log('Profile Response:', userResponse.data); // Para debug
+  
+          // Verificar que estamos recibiendo los datos correctamente
+          if (userResponse.data.data) {
+            // Guardar los datos del usuario en el store
+            login(userResponse.data.data, token);
+            navigate('/dashboard');
+          } else {
+            setError('Error al obtener datos del usuario');
+          }
+        } catch (profileError) {
+          console.error('Error al obtener perfil:', profileError);
+          setError('Error al obtener información del usuario');
+        }
       } else {
-        setError('Nombre de usuario o contraseña incorrectos.');
+        setError('Error en la respuesta del servidor');
       }
     } catch (error) {
       console.error('Error de autenticación:', error);
-      setError('No se recibió respuesta del servidor.');
+      setError(error.response?.data?.error || 'Error al conectar con el servidor');
     }
   };
 
@@ -60,18 +70,18 @@ const LoginForm = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label 
-              htmlFor="username" 
+              htmlFor="email" 
               className="block text-red-500 font-medium mb-2"
             >
-              Usuario:
+              Correo electrónico:
             </label>
             <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full border-2 border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-red-200"
-              placeholder="Introduce tu nombre de usuario"
+              placeholder="Introduce tu correo electrónico"
               required
             />
           </div>
