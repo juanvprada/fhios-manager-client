@@ -2,7 +2,11 @@
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "../layout/Layout";
 import Projects from "../pages/Projects";
-import NewProject from "../pages/newProjects";
+import LoginForm from "../pages/LoginForm";
+import ProtectedRoute from "../components/ProtectedRoute";
+import Dashboard from "../pages/Dashboard";
+import UsersList from "../components/UserList";
+
 
 export const router = createBrowserRouter([
   {
@@ -14,13 +18,37 @@ export const router = createBrowserRouter([
         element: <h1 className="text-2xl font-poppins">Inicio</h1>,
       },
       {
+       /*  Ruta protegida para proyectos */
+        element: <ProtectedRoute />,
+        children: [
+      {
         path: "proyectos",
         element: <Projects />,
       },
-      {
-        path: "proyectos/nuevo",  
-        element: <NewProject />,
+        ]
       },
+      {
+        /* Ruta protegida solo para admin */
+        element: <ProtectedRoute adminOnly={true} />,
+        children: [
+          {
+            path: "usuarios",
+            element: <h1 className="text-2xl font-poppins">Gestión de Usuarios</h1>,
+          },
+        ]
+      },
+      {
+        path: "loginform",
+        element: <LoginForm />,
+      },
+      {
+        path: "dashboard",
+        element: <Dashboard />,
+      },
+      {
+        path: "Userlist",
+        element: <UsersList />,
+      }
     ],
   },
 ]);
