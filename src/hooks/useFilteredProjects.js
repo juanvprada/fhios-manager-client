@@ -1,28 +1,27 @@
 import { useMemo } from "react";
 
-const projects = [
-  { id: 1, name: "Proyecto Alpha", createdAt: new Date("2022-01-15"), creator: "Juan" },
-  { id: 2, name: "Proyecto Beta", createdAt: new Date("2023-05-10"), creator: "María" },
-  { id: 3, name: "Proyecto Gamma", createdAt: new Date("2021-09-12"), creator: "Carlos" },
-];
-
-const useFilteredProjects = (searchTerm, sortOrder) => {
+const useFilteredProjects = (projects = [], searchTerm, sortOrder) => {
   const filteredProjects = useMemo(() => {
+    if (!Array.isArray(projects)) return [];
+
     return projects
       .filter((project) =>
-        project.name.toLowerCase().includes(searchTerm.toLowerCase())
+        project.project_name?.toLowerCase().includes(searchTerm.toLowerCase())
       )
       .sort((a, b) => {
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
         if (sortOrder === "asc") {
-          return a.createdAt - b.createdAt;
+          return dateA - dateB;
         } else {
-          return b.createdAt - a.createdAt;
+          return dateB - dateA;
         }
       });
-  }, [searchTerm, sortOrder]);
+  }, [projects, searchTerm, sortOrder]);
 
   return { filteredProjects };
 };
 
 export default useFilteredProjects;
+
 

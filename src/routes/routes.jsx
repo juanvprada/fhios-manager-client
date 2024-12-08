@@ -1,9 +1,14 @@
+// routes.jsx
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "../layout/Layout";
 import Projects from "../pages/Projects";
 import UserManagement from "../pages/UserManagement";
 import NewProject from "../pages/newProject";
 import RegisterForm from "../pages/RegisterForm";
+import LoginForm from "../pages/LoginForm";
+import ProtectedRoute from "../components/ProtectedRoute";
+import Dashboard from "../pages/Dashboard";
+import ProjectDetail from '../pages/ProjectDetail';
 
 export const router = createBrowserRouter([
   {
@@ -19,21 +24,41 @@ export const router = createBrowserRouter([
         element: <RegisterForm />,
       },
       {
-        path: "proyectos",
-        element: <Projects />,
+        path: "login",
+        element: <LoginForm />,
       },
       {
-        path: "proyectos/nuevo",
-        element: <NewProject /> ,
+        path: "dashboard",
+        element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
       },
       {
-        path: "usuarios",
-        element: <UserManagement />,
+        path: "projects",
+        element: <ProtectedRoute />,
+        children: [
+          {
+            index: true,
+            element: <Projects />,
+          },
+          {
+            path: "nuevo",
+            element: <NewProject />,
+          },
+        ],
+      },
+      {
+        path: '/projects/:projectId',
+        element: <ProjectDetail />
+      },
+      {
+        path: "users",
+        element: <ProtectedRoute adminOnly={true} />,
+        children: [
+          {
+            index: true,
+            element: <UserManagement />,
+          },
+        ],
       },
     ],
   },
 ]);
-
-
-
-

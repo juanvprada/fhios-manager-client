@@ -14,8 +14,41 @@ const UserManagement = () => {
     setShowRoleModal,
     filteredUsers,
     handleRoleChange,
-    handleDeleteUser
+    handleDeleteUser,
+    loading,
+    error
   } = useUserManagement();
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'N/A';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6 md:ml-64 flex justify-center items-center">
+        <p>Cargando usuarios...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 md:ml-64 flex justify-center items-center">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 sm:p-6 md:ml-64 flex flex-col items-center justify-center">
@@ -69,28 +102,31 @@ const UserManagement = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
+                <tr key={user.id || user.user_id || Math.random()} className="hover:bg-gray-50">
                   <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {user.name}
+                        </div>
                         <div className="text-sm text-gray-500">{user.email}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${user.role === 'Project Manager' ? 'bg-green-100 text-green-800' : 
+                      ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                        user.role === 'Project Manager' ? 'bg-green-100 text-green-800' : 
                         user.role === 'Tech Leader' ? 'bg-blue-100 text-blue-800' : 
                         'bg-gray-100 text-gray-800'}`}>
                       {user.role}
                     </span>
                   </td>
                   <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.createdAt.toLocaleDateString()}
+                    {formatDate(user.created_at)}
                   </td>
                   <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 justify-end">
                       <button
                         onClick={() => {
                           setSelectedUser(user);
@@ -101,7 +137,7 @@ const UserManagement = () => {
                         <FiEdit2 className="w-5 h-5" />
                       </button>
                       <button
-                        onClick={() => handleDeleteUser(user.id)}
+                        onClick={() => handleDeleteUser(user.id || user.user_id)}
                         className="text-red-600 hover:text-red-900 transition-colors duration-200"
                       >
                         <FiTrash2 className="w-5 h-5" />
@@ -120,18 +156,25 @@ const UserManagement = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-4 sm:p-6 max-w-sm w-full mx-4">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Cambiar rol de usuario
+              Cambiar rol de {selectedUser.name}
             </h3>
             <div className="space-y-4">
               <button
-                onClick={() => handleRoleChange(selectedUser.id, 'Project Manager')}
+                onClick={() => handleRoleChange(selectedUser.id || selectedUser.user_id, 'admin')}
+                className="w-full p-2 text-left rounded-lg hover:bg-purple-50 flex items-center gap-2 transition-colors duration-200"
+              >
+                <FiUserCheck className="text-purple-500" />
+                Administrador
+              </button>
+              <button
+                onClick={() => handleRoleChange(selectedUser.id || selectedUser.user_id, 'Project Manager')}
                 className="w-full p-2 text-left rounded-lg hover:bg-green-50 flex items-center gap-2 transition-colors duration-200"
               >
                 <FiUserCheck className="text-green-500" />
                 Project Manager
               </button>
               <button
-                onClick={() => handleRoleChange(selectedUser.id, 'Tech Leader')}
+                onClick={() => handleRoleChange(selectedUser.id || selectedUser.user_id, 'Tech Leader')}
                 className="w-full p-2 text-left rounded-lg hover:bg-blue-50 flex items-center gap-2 transition-colors duration-200"
               >
                 <FiUserCheck className="text-blue-500" />

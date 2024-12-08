@@ -17,7 +17,7 @@ const Sidebar = () => {
   return (
     <>
       {/* Sidebar completo (visible en Desktop) */}
-      <div className="hidden md:flex md:flex-col md:fixed md:top-0 md:left-0 md:w-64 md:h-screen bg-gradient-to-b from-secondary-50 via-light to-secondary-100 shadow-xl">
+      <div className="hidden md:flex md:flex-col md:fixed md:top-14 md:left-0 md:w-64 md:h-[calc(100vh-3.5rem)] bg-gradient-to-b from-secondary-50 via-light to-secondary-100 shadow-xl">
         <nav className="p-6">
           <ul>
             {menuItemsConfig.map((item, index) => (
@@ -42,7 +42,7 @@ const Sidebar = () => {
       {/* Botón de menú hamburguesa (visible en móviles) */}
       <button
         onClick={toggleMenu}
-        className="fixed top-4 left-4 z-50 p-2 bg-secondary-50 shadow-md rounded-md md:hidden"
+        className="fixed top-16 left-4 z-40 p-2 bg-secondary-50 shadow-md rounded-md md:hidden" // Cambiado top-4 a top-16 y z-50 a z-40
       >
         <span className="material-icons text-primary-500 text-2xl">menu</span>
       </button>
