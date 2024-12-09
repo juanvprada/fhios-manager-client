@@ -1,22 +1,26 @@
 import React, { useState } from "react";
 import { Bell, ChevronDown, Menu } from "lucide-react";
+import useStore from '../store/store';
 
-const Navbar = ({
-  userName,
-  userAvatar,
-  navItems = [
-    { name: "Home", isActive: true },
-    { name: "Projects", isActive: false },
-    { name: "Team", isActive: false },
-  ],
-  onLogout,
-  isOpen,
-  setIsOpen
-}) => {
+const Navbar = ({ isOpen, setIsOpen }) => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const user = useStore(state => state.user);
+  const logout = useStore(state => state.logout);
 
   const toggleProfileDropdown = () => {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
+  };
+
+  // Función para obtener las iniciales
+  const getInitials = () => {
+    if (!user) return 'U';
+    return `${user.first_name?.charAt(0) || ''}${user.last_name?.charAt(0) || ''}`.toUpperCase();
+  };
+
+  // Función para obtener el nombre completo
+  const getFullName = () => {
+    if (!user) return 'Usuario';
+    return `${user.first_name || ''} ${user.last_name || ''}`.trim();
   };
 
   return (
@@ -54,13 +58,11 @@ const Navbar = ({
             onClick={toggleProfileDropdown}
             className="flex items-center space-x-2 hover:bg-secondary-200 px-2 sm:px-3 py-2 rounded-md"
           >
-            <img
-              src={userAvatar || "/path/to/default-avatar.png"}
-              alt={userName}
-              className="w-8 h-8 rounded-full"
-            />
+            <div className="flex items-center justify-center w-8 h-8 bg-secondary-500 text-white rounded-full">
+  <span className="font-bold text-sm">{getInitials()}</span>
+</div>
             <span className="text-sm font-medium text-secondary-700 hidden sm:block">
-              {userName}
+              {getFullName()}
             </span>
             <ChevronDown className="w-4 h-4 text-secondary-600" />
           </button>
@@ -68,13 +70,17 @@ const Navbar = ({
           {isProfileDropdownOpen && (
             <div className="absolute right-0 mt-2 w-56 bg-white border rounded-md shadow-lg">
               <div className="py-1">
+                <div className="px-4 py-2 text-sm text-gray-500">
+                  {user?.email}
+                </div>
+                <hr />
                 <button
                   onClick={() => {
                     setIsProfileDropdownOpen(false);
                   }}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
-                  My Profile
+                  Mi Perfil
                 </button>
                 <button
                   onClick={() => {
@@ -82,16 +88,16 @@ const Navbar = ({
                   }}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
-                  Settings
+                  Configuración
                 </button>
                 <button
                   onClick={() => {
-                    onLogout?.();
+                    logout();
                     setIsProfileDropdownOpen(false);
                   }}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
-                  Logout
+                  Cerrar sesión
                 </button>
               </div>
             </div>
