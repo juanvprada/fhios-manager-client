@@ -33,7 +33,7 @@ const RegisterForm = () => {
         setIsLoading(true);
 
         try {
-            await axios.post('http://localhost:5000/api/users', {
+            await axios.post('http://localhost:3000/api/users', {
                 email,
                 password,
                 first_name,
@@ -42,7 +42,7 @@ const RegisterForm = () => {
                 role: 'admin'  // Añadimos el rol admin por defecto
             });
         
-            const loginResponse = await axios.post('http://localhost:5000/api/auth/login', {
+            const loginResponse = await axios.post('http://localhost:3000/api/auth/login', {
                 email,
                 password
             });
