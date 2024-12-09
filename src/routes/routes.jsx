@@ -1,14 +1,19 @@
 // routes.jsx
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import Layout from "../layout/Layout";
 import Projects from "../pages/Projects";
 import LoginForm from "../pages/LoginForm";
 import ProtectedRoute from "../components/ProtectedRoute";
 import Dashboard from "../pages/Dashboard";
 import UsersList from "../components/UserList";
+import useStore from "../store/store";
 
 
 export const router = createBrowserRouter([
+  {
+    path: "/login",
+    element: <LoginForm />,
+  },
   {
     path: "/",
     element: <Layout />,
@@ -38,8 +43,8 @@ export const router = createBrowserRouter([
         ]
       },
       {
-        path: "loginform",
-        element: <LoginForm />,
+        path: "logout",
+        element: <LogoutRoute />,
       },
       {
         path: "dashboard",
@@ -53,7 +58,8 @@ export const router = createBrowserRouter([
   },
 ]);
 
-
-
-
-
+function LogoutRoute() {
+  const logout = useStore(state => state.logout);
+  logout();
+  return <Navigate to="/login" replace />;
+}
