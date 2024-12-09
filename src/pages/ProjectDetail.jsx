@@ -73,8 +73,28 @@ const ProjectDetail = () => {
 
   const handleCreateTask = async (taskData) => {
     try {
-      const newTask = await createTask(projectId, taskData);
-      setTasks(prevTasks => [...prevTasks, newTask]);
+      // Convertir la string de usuarios separada por comas a un array
+      const userIds = taskData.assigned_to.split(',');
+      
+      // Preparar la tarea con el formato correcto
+      const modifiedTaskData = {
+        ...taskData,
+        assigned_to: userIds[0], // Usar el primer usuario como assigned_to principal
+        assignedUsers: userIds.join('|'),
+        description: `${taskData.description || ''}\n<!--ASSIGNED_USERS:${userIds.join('|')}-->`
+      };
+
+      // Crear la tarea
+      const newTask = await createTask(projectId, modifiedTaskData);
+      
+      // Procesar la tarea para mostrar correctamente los usuarios asignados
+      const processedTask = {
+        ...newTask,
+        description: newTask.description.replace(/<!--ASSIGNED_USERS:.*?-->/, '').trim(),
+        assignedUsers: userIds
+      };
+
+      setTasks(prevTasks => [...prevTasks, processedTask]);
       setShowTaskForm(false);
     } catch (error) {
       console.error('Error al crear la tarea:', error);
@@ -225,10 +245,19 @@ const ProjectDetail = () => {
                     <div className="mt-2 flex items-center text-sm text-gray-500">
                       <FiCalendar className="w-4 h-4 mr-1" />
                       <span>{new Date(task.due_date).toLocaleDateString()}</span>
-                      {task.assigned_to && (
-                        <span className="ml-4">
-                          Asignado a: {availableUsers.find(u => u.user_id === task.assigned_to)?.name}
-                        </span>
+                      {task.assignedUsers && (
+                        <div className="ml-4 flex flex-wrap items-center">
+                          <span>Asignado a: </span>
+                          {task.assignedUsers.map((userId, index) => {
+                            const user = availableUsers.find(u => u.user_id.toString() === userId);
+                            return (
+                              <span key={userId} className="ml-1">
+                                {user?.name}
+                                {index < task.assignedUsers.length - 1 ? ', ' : ''}
+                              </span>
+                            );
+                          })}
+                        </div>
                       )}
                     </div>
                   </div>
