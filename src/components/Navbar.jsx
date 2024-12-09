@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Bell, ChevronDown, Menu } from "lucide-react";
 import useStore from '../store/store';
 

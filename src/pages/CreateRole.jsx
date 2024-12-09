@@ -1,5 +1,5 @@
 // pages/CreateRole.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
 import { createRole } from '../services/rolesServices';
