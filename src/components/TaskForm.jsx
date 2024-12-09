@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FiX } from 'react-icons/fi';
+import PropTypes from "prop-types";
 
 const TaskForm = ({ onSubmit, onClose, availableUsers }) => {
     const [taskData, setTaskData] = useState({
@@ -162,5 +163,17 @@ const TaskForm = ({ onSubmit, onClose, availableUsers }) => {
         </div>
     );
 };
+
+//validación de las props
+TaskForm.propTypes = {
+    onClose: PropTypes.func.isRequired,
+    onSubmit: PropTypes.func.isRequired,
+    availableUsers: PropTypes.arrayOf(PropTypes.shape({
+        user_id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+    })
+).isRequired,
+};
+
 
 export default TaskForm;
