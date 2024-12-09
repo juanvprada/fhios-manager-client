@@ -17,13 +17,10 @@ const Layout = () => {
   };
 
   return (
-    <div>
-      <Navbar onLogout={handleLogout} /> {/* Pasamos la función como prop */}
-      <div className="flex">
-        <Sidebar />
-        <div className="flex-1 p-4">
-          <Outlet /> {/* Este es el lugar donde se renderizarán las rutas hijas */}
-        </div>
+    <div className="flex">
+      <Sidebar  className=""/>
+      <div className="flex-1  p-4 mt-10">
+        <Outlet />
       </div>
     </div>
   );
