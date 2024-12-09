@@ -42,11 +42,7 @@ export const assignUserToProject = async (projectId, userId) => {
     const response = await axios.post(
       `http://localhost:3000/api/projects/${projectId}/assign`,
       { userId },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      getAuthHeader()  // Use getAuthHeader() instead of manually accessing token
     );
     return response.data;
   } catch (error) {
