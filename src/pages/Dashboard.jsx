@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useStore from '../store/store';
-import axios from '../services/axiosConfig';
+import axios from 'axios';
 
 const Dashboard = () => {
   const [projects, setProjects] = useState([]);
@@ -19,7 +19,7 @@ const Dashboard = () => {
 
         // Obtener datos del usuario si no están disponibles
         if (!user || !user.first_name) {
-          const userResponse = await axios.get('http://localhost:3000/api/auth/profile');
+          const userResponse = await axios.get('http://localhost:5000/api/auth/profile');
           if (userResponse.data.data && isMounted) {
             login(userResponse.data.data);
           }
@@ -27,8 +27,8 @@ const Dashboard = () => {
 
         // Obtener proyectos y tareas
         const [projectsResponse, tasksResponse] = await Promise.all([
-          axios.get('http://localhost:3000/api/projects'),
-          axios.get('http://localhost:3000/api/tasks')
+          axios.get('http://localhost:5000/api/projects'),
+          axios.get('http://localhost:5000/api/tasks')
         ]);
 
         if (isMounted) {

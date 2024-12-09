@@ -2,14 +2,18 @@
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "../layout/Layout";
 import Projects from "../pages/Projects";
+import UserManagement from "../pages/UserManagement";
+import NewProject from "../pages/newProject";
+import RegisterForm from "../pages/RegisterForm";
 import LoginForm from "../pages/LoginForm";
 import ProtectedRoute from "../components/ProtectedRoute";
 import Dashboard from "../pages/Dashboard";
-import UsersList from "../components/UserList";
-
+import ProjectDetail from '../pages/ProjectDetail';
 
 export const router = createBrowserRouter([
   {
+    
+
     path: "/",
     element: <Layout />,
     children: [
@@ -18,42 +22,52 @@ export const router = createBrowserRouter([
         element: <h1 className="text-2xl font-poppins">Inicio</h1>,
       },
       {
+        path: "login",
+    element: <LoginForm />,
+      },
+      {
        /*  Ruta protegida para proyectos */
         element: <ProtectedRoute />,
         children: [
-      {
-        path: "proyectos",
-        element: <Projects />,
-      },
-        ]
-      },
-      {
-        /* Ruta protegida solo para admin */
-        element: <ProtectedRoute adminOnly={true} />,
-        children: [
           {
-            path: "usuarios",
-            element: <h1 className="text-2xl font-poppins">Gestión de Usuarios</h1>,
+            path: "registerform",
+            element: <RegisterForm />,
           },
-        ]
+          {
+            path: "dashboard",
+            element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
+          },
+          {
+            path: "projects",
+            element: <ProtectedRoute />,
+            children: [
+              {
+                index: true,
+                element: <Projects />,
+              },
+              {
+                path: "nuevo",
+                element: <NewProject />,
+              },
+            ],
+          },
+          {
+            path: '/projects/:projectId',
+            element: <ProjectDetail />
+          },
+          {
+            path: "users",
+            element: <ProtectedRoute adminOnly={true} />,
+            children: [
+              {
+                index: true,
+                element: <UserManagement />,
+              },
+            ],
+          },
+        ],
       },
-      {
-        path: "loginform",
-        element: <LoginForm />,
-      },
-      {
-        path: "dashboard",
-        element: <Dashboard />,
-      },
-      {
-        path: "Userlist",
-        element: <UsersList />,
-      }
     ],
+
   },
 ]);
-
-
-
-
-
