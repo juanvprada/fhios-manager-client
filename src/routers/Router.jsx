@@ -6,10 +6,10 @@ import Profile from '../components/Profile.jsx'; // Importa el componente
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Layout />,
+    element: <Layout />, // El Layout envolverá las páginas
     children: [
-      { index: true, element: <Home /> },
-      { path: 'profile', element: <Profile /> }, // Ruta para el perfil
+      { index: true, element: <Home /> },  // Ruta principal
+      { path: 'profile', element: <Profile /> },  // Ruta para el perfil
     ],
   },
 ]);
