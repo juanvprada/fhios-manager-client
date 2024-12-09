@@ -28,6 +28,7 @@ export default {
             700: "#99001A",
             800: "#660010",
             900: "#330008",
+            'custom-red': '#FF002E',
           },
           secondary: {
             50: "#EAF6F7",
@@ -59,6 +60,4 @@ export default {
     },
     plugins: [],
   };
-  
-  
   
