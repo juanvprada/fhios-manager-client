@@ -62,3 +62,9 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+
+function LogoutRoute() {
+  const logout = useStore(state => state.logout);
+  logout();
+  return <Navigate to="/login" replace />;
+}

@@ -1,49 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import useFilteredProjects from "../hooks/useFilteredProjects";
-import { getProjects } from "../services/projectServices";
-import useStore from '../store/store';
+import React from "react";
+import { useNavigate, Link } from "react-router-dom";
+import useProjects from "../hooks/useProject";
 
 const Projects = () => {
-  const [projects, setProjects] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const isAuthenticated = useStore(state => state.isAuthenticated);
-  const token = useStore(state => state.token);
-
-  // Hook para filtrar y ordenar
-  const { filteredProjects } = useFilteredProjects(projects, searchTerm, sortOrder);
-
-  // Cargar proyectos desde el backend al montar el componente
-  useEffect(() => {
-    const fetchProjects = async () => {
-      if (!isAuthenticated || !token) {
-        setError("No estás autenticado");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const data = await getProjects();
-        setProjects(data);
-        setError(null);
-      } catch (error) {
-        console.error("Error al cargar proyectos:", error);
-        setError(
-          error.response?.data?.message || 
-          "Error al cargar los proyectos. Por favor, intenta de nuevo."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProjects();
-  }, [isAuthenticated, token]);
+  const {
+    filteredProjects,
+    loading,
+    error,
+    searchTerm,
+    setSearchTerm,
+    sortOrder,
+    setSortOrder
+  } = useProjects();
 
   const handleProjectClick = (projectId) => {
     navigate(`/projects/${projectId}`);
@@ -52,7 +21,7 @@ const Projects = () => {
   if (loading) {
     return (
       <div className="p-6 md:ml-64 flex justify-center items-center">
-        <p>Cargando proyectos...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
       </div>
     );
   }
@@ -70,6 +39,7 @@ const Projects = () => {
       <h1 className="text-2xl text-center font-poppins font-bold text-primary-500 mb-4">
         Proyectos
       </h1>
+      <br />
 
       {/* Controles de Búsqueda y Orden */}
       <div className="flex flex-col md:flex-row gap-4 mb-6 w-full max-w-xl">
@@ -93,28 +63,36 @@ const Projects = () => {
       {/* Lista de Proyectos */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-4xl">
         {filteredProjects.length === 0 ? (
-          <p className="text-gray-500 col-span-full text-center">
+          <p className="col-span-full text-center text-gray-500">
             No se encontraron proyectos.
           </p>
         ) : (
           filteredProjects.map((project) => (
             <div
               key={project.project_id}
-              className="p-3 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 bg-white cursor-pointer"
               onClick={() => handleProjectClick(project.project_id)}
+              className="p-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 bg-white cursor-pointer"
             >
               <h2 className="text-lg font-poppins font-semibold text-primary-500">
                 {project.project_name}
               </h2>
-              <p className="text-sm text-secondary-700">
-                Creado el: {new Date(project.created_at).toLocaleDateString()} por{" "}
-                {project.created_by || "Desconocido"}
+              <p className="text-sm text-gray-600 mt-2">
+                {project.description || 'Sin descripción'}
               </p>
-              <p className="text-sm text-secondary-700">
+              <div className="mt-4 flex justify-between items-center">
+                <span className={`px-2 py-1 text-xs rounded-full ${
+                  project.status === 'planning' ? 'bg-yellow-100 text-yellow-800' :
+                  project.status === 'active' ? 'bg-green-100 text-green-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  {project.status}
+                </span>
+                <span className="text-sm text-gray-500">
+                  {new Date(project.created_at).toLocaleDateString()}
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 mt-2">
                 Metodología: {project.methodology}
-              </p>
-              <p className="text-sm text-secondary-700">
-                Estado: {project.status}
               </p>
             </div>
           ))

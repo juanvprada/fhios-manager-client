@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getUsers, getAllUserRoles } from '../services/usersServices';
+import { getUsers, updateUserRole, deleteUser } from '../services/usersServices';
 import useStore from '../store/store';
 
 const useUserManagement = () => {
@@ -24,20 +24,8 @@ const useUserManagement = () => {
 
       try {
         setLoading(true);
-        const [usersData, rolesData] = await Promise.all([
-          getUsers(),
-          getAllUserRoles()
-        ]);
-
-        // Mapear usuarios con sus nombres completos
-        const formattedUsers = usersData.map(user => ({
-          ...user,
-          id: user.user_id,
-          name: `${user.first_name} ${user.last_name}`,
-          role: rolesData.find(role => role.user_id === user.user_id)?.role_name || 'Sin rol'
-        }));
-
-        setUsers(formattedUsers);
+        const userData = await getUsers();
+        setUsers(userData);
         setError(null);
       } catch (error) {
         console.error('Error al cargar datos:', error);
@@ -50,7 +38,6 @@ const useUserManagement = () => {
     fetchData();
   }, [isAuthenticated, token]);
 
-  // Filtrar y ordenar usuarios
   const filteredUsers = users.filter((user) =>
     (user.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
@@ -60,13 +47,12 @@ const useUserManagement = () => {
     return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
   });
 
-  // Manejar cambios de rol
   const handleRoleChange = async (userId, newRole) => {
     try {
-      const updatedUser = await updateUser(userId, { role: newRole });
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === userId ? { ...user, role: updatedUser.role } : user
+      const updatedRole = await updateUserRole(userId, newRole);
+      setUsers(prevUsers =>
+        prevUsers.map(user =>
+          user.id === userId ? { ...user, role: newRole } : user
         )
       );
       setShowRoleModal(false);
@@ -75,11 +61,10 @@ const useUserManagement = () => {
     }
   };
 
-  // Manejar eliminación de usuarios
   const handleDeleteUser = async (userId) => {
     try {
       await deleteUser(userId);
-      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+      setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
     } catch (error) {
       console.error('Error al eliminar usuario:', error);
     }

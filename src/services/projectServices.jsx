@@ -36,3 +36,20 @@ export const updateProject = async (projectId, updatedData) => {
 export const deleteProject = async (projectId) => {
   await axios.delete(`${API_URL}/${projectId}`, getAuthHeader());
 };
+
+export const assignUserToProject = async (projectId, userId) => {
+  try {
+    const response = await axios.post(
+      `http://localhost:3000/api/projects/${projectId}/assign`,
+      { userId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Error assigning user to project');
+  }
+};
