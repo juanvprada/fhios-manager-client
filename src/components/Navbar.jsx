@@ -67,9 +67,9 @@ const Navbar = ({
         </button>
 
         {/* Help */}
-        <button className="p-2 hover:bg-secondary-200 rounded-full">
+        {/* <button className="p-2 hover:bg-secondary-200 rounded-full">
           <HelpCircle className="w-5 h-5 text-secondary-600" />
-        </button>
+        </button> */}
 
         {/* Profile Section */}
         <div className="relative">

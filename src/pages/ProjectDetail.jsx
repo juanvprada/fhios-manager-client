@@ -132,143 +132,155 @@ const ProjectDetail = () => {
     : null;
 
   return (
-    <div className="p-6 md:ml-64">
-      {/* Header con navegación */}
-      <div className="flex items-center mb-6">
-        <button
-          onClick={() => navigate('/projects')}
-          className="mr-4 text-gray-600 hover:text-gray-900"
-        >
-          <FiArrowLeft className="w-6 h-6" />
-        </button>
-        <h1 className="text-2xl font-poppins font-bold text-primary-500">
-          {project.project_name}
-        </h1>
-      </div>
-
-      {/* Información del Proyecto */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        {/* Información General */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Información General
-            </h2>
-            <div className="space-y-3">
-              <div className="flex items-center text-gray-600">
-                <FiCalendar className="w-5 h-5 mr-2" />
-                <span>Creado el: {new Date(project.created_at).toLocaleDateString()}</span>
-              </div>
-              <div className="flex items-center text-gray-600">
-                <FiUsers className="w-5 h-5 mr-2" />
-                <span>Creado por: {project.created_by || "Desconocido"}</span>
-              </div>
-              <div className="flex items-center text-gray-600">
-                <FiFlag className="w-5 h-5 mr-2" />
-                <span>Metodología: {project.methodology}</span>
-              </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8 pt-6 pb-16">
+        <div className="md:ml-64">
+          <div className="max-w-6xl mx-auto">
+            {/* Header con navegación */}
+            <div className="sticky top-0 z-10 flex items-center mb-6 bg-gray-50 py-4">
+              <button
+                onClick={() => navigate('/projects')}
+                className="mr-4 text-gray-600 hover:text-gray-900"
+              >
+                <FiArrowLeft className="w-6 h-6" />
+              </button>
+              <h1 className="text-2xl font-poppins font-bold text-primary-500">
+                {project.project_name}
+              </h1>
             </div>
-          </div>
 
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Estado del Proyecto
-            </h2>
-            <div className="space-y-3">
-              {project.start_date && project.end_date && (
-                <div className="inline-flex items-center bg-blue-100 text-blue-800 px-4 py-2 rounded-lg shadow-md w-auto">
-                  <span className="text-lg font-bold">
-                    Días hábiles para terminarlo:
-                  </span>
-                  <span className="ml-2 text-xl font-extrabold">{businessDays}</span>
-                </div>
-              )}
-              {project.start_date && (
-                <div className="text-gray-600">
-                  Fecha de inicio: {new Date(project.start_date).toLocaleDateString()}
-                </div>
-              )}
-              {project.end_date && (
-                <div className="text-gray-600">
-                  Fecha de finalización: {new Date(project.end_date).toLocaleDateString()}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Descripción */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Descripción
-          </h2>
-          <p className="text-gray-600">
-            {project.description || "No hay descripción disponible."}
-          </p>
-        </div>
-
-        {/* Sección de Tareas */}
-        <div className="mt-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Tareas del Proyecto
-            </h2>
-            <button
-              onClick={() => setShowTaskForm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
-            >
-              <FiPlus className="w-4 h-4" />
-              Nueva Tarea
-            </button>
-          </div>
-
-          <div className="bg-white rounded-lg shadow">
-            {tasks.length === 0 ? (
-              <p className="p-4 text-gray-500 text-center">
-                No hay tareas creadas aún.
-              </p>
-            ) : (
-              <div className="divide-y divide-gray-200">
-                {tasks.map((task) => (
-                  <div
-                    key={task.task_id}
-                    className="p-4 hover:bg-gray-50 cursor-pointer"
-                    onClick={() => navigate(`/projects/${projectId}/tasks/${task.task_id}`)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium text-gray-900">{task.title}</h3>
-                        <p className="text-sm text-gray-500">{task.description}</p>
-                      </div>
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full
-                        ${task.priority === 'high' ? 'bg-red-100 text-red-800' :
-                          task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-green-100 text-green-800'}`}>
-                        {task.priority}
-                      </span>
+            {/* Información del Proyecto */}
+            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 md:p-8">
+              {/* Información General y Estado */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                    Información General
+                  </h2>
+                  <div className="space-y-4">
+                    <div className="flex items-center text-gray-600">
+                      <FiCalendar className="w-5 h-5 mr-3 text-primary-500" />
+                      <span>Creado el: {new Date(project.created_at).toLocaleDateString()}</span>
                     </div>
-                    <div className="mt-2 flex items-center text-sm text-gray-500">
-                      <FiCalendar className="w-4 h-4 mr-1" />
-                      <span>{new Date(task.due_date).toLocaleDateString()}</span>
-                      {task.assignedUsers && (
-                        <div className="ml-4 flex flex-wrap items-center">
-                          <span>Asignado a: </span>
-                          {task.assignedUsers.map((userId, index) => {
-                            const user = availableUsers.find(u => u.user_id.toString() === userId);
-                            return (
-                              <span key={userId} className="ml-1">
-                                {user?.name}
-                                {index < task.assignedUsers.length - 1 ? ', ' : ''}
-                              </span>
-                            );
-                          })}
+                    <div className="flex items-center text-gray-600">
+                      <FiUsers className="w-5 h-5 mr-3 text-primary-500" />
+                      <span>Creado por: {project.created_by || "Desconocido"}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <FiFlag className="w-5 h-5 mr-3 text-primary-500" />
+                      <span>Metodología: {project.methodology}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                    Estado del Proyecto
+                  </h2>
+                  <div className="space-y-4">
+                    {project.start_date && project.end_date && (
+                      <div className="bg-blue-50 text-blue-800 px-6 py-4 rounded-xl shadow-sm">
+                        <div className="text-sm font-medium mb-1">Días hábiles restantes</div>
+                        <div className="text-2xl font-bold">{businessDays}</div>
+                      </div>
+                    )}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                      {project.start_date && project.end_date && (
+                        <div className="bg-gray-50 rounded-lg p-4 flex justify-between items-center">
+                          <div className="mr-6">
+                            <div className="text-sm font-medium text-gray-500 mb-1">Fecha de inicio</div>
+                            <div className="text-gray-900">{new Date(project.start_date).toLocaleDateString()}</div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-500 mb-1">Fecha de finalización</div>
+                            <div className="text-gray-900">{new Date(project.end_date).toLocaleDateString()}</div>
+                          </div>
                         </div>
                       )}
                     </div>
                   </div>
-                ))}
+                </div>
               </div>
-            )}
+
+              {/* Descripción */}
+              <div className="mb-8">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Descripción
+                </h2>
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <p className="text-gray-600">
+                    {project.description || "No hay descripción disponible."}
+                  </p>
+                </div>
+              </div>
+
+              {/* Sección de Tareas */}
+              <div className="mt-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4 sm:mb-0">
+                    Tareas del Proyecto
+                  </h2>
+                  <button
+                    onClick={() => setShowTaskForm(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                  >
+                    <FiPlus className="w-4 h-4" />
+                    Nueva Tarea
+                  </button>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl">
+                  {tasks.length === 0 ? (
+                    <div className="p-8 text-center">
+                      <p className="text-gray-500">No hay tareas creadas aún.</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-200">
+                      {tasks.map((task) => (
+                        <div
+                          key={task.task_id}
+                          className="p-4 sm:p-6 hover:bg-white transition-colors duration-200 cursor-pointer rounded-lg"
+                          onClick={() => navigate(`/projects/${projectId}/tasks/${task.task_id}`)}
+                        >
+                          <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-medium text-gray-900 mb-2">{task.title}</h3>
+                              <p className="text-sm text-gray-600">{task.description}</p>
+                            </div>
+                            <span className={`px-3 py-1 text-xs font-semibold rounded-full self-start
+                                ${task.priority === 'high' ? 'bg-red-100 text-red-800' :
+                                task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-green-100 text-green-800'}`}>
+                              {task.priority}
+                            </span>
+                          </div>
+                          <div className="mt-4 flex flex-col sm:flex-row gap-4 text-sm text-gray-500">
+                            <div className="flex items-center">
+                              <FiCalendar className="w-4 h-4 mr-2" />
+                              <span>{new Date(task.due_date).toLocaleDateString()}</span>
+                            </div>
+                            {task.assignedUsers && (
+                              <div className="flex flex-wrap items-center">
+                                <span className="mr-2">Asignado a:</span>
+                                {task.assignedUsers.map((userId, index) => {
+                                  const user = availableUsers.find(u => u.user_id.toString() === userId);
+                                  return (
+                                    <span key={userId} className="mr-1">
+                                      {user?.name}
+                                      {index < task.assignedUsers.length - 1 ? ',' : ''}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -283,6 +295,5 @@ const ProjectDetail = () => {
       )}
     </div>
   );
-};
-
+}
 export default ProjectDetail;
