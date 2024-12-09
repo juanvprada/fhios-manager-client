@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getUsers, getAllUserRoles, getUserRoles, assignUserRole, removeUserRole  } from '../services/usersServices';
+import { getUsers, updateUserRole, deleteUser } from '../services/usersServices';
 import useStore from '../store/store';
 import axios from 'axios';
 
@@ -35,33 +35,8 @@ const useUserManagement = () => {
 
       try {
         setLoading(true);
-        
-        // Obtener roles disponibles - Corregida la ruta
-        const rolesResponse = await axios.get(`${API_URL}/api/roles`, getHeaders());
-        console.log('Respuesta de roles:', rolesResponse.data);
-        const rolesData = rolesResponse.data.data || rolesResponse.data || [];
-        setRoles(rolesData);
-
-        // Obtener usuarios
-        const usersResponse = await axios.get(`${API_URL}/api/users`, getHeaders());
-        const usersData = usersResponse.data.data || usersResponse.data || [];
-
-        // Obtener roles específicos para cada usuario
-        const userRolesData = {};
-        await Promise.all(
-          usersData.map(async (user) => {
-            try {
-              const response = await axios.get(`${API_URL}/api/roles/user/${user.user_id}`, getHeaders());
-              userRolesData[user.user_id] = response.data.data || response.data || [];
-            } catch (error) {
-              console.error(`Error al obtener roles para usuario ${user.user_id}:`, error);
-              userRolesData[user.user_id] = [];
-            }
-          })
-        );
-        
-        setUserRoles(userRolesData);
-        setUsers(usersData);
+        const userData = await getUsers();
+        setUsers(userData);
         setError(null);
       } catch (error) {
         console.error('Error al cargar datos:', error);
@@ -74,8 +49,6 @@ const useUserManagement = () => {
     fetchData();
   }, [isAuthenticated, token]);
 
-
-  // Filtrar y ordenar usuarios
   const filteredUsers = users.filter((user) =>
     (user.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
@@ -85,41 +58,13 @@ const useUserManagement = () => {
     return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
   });
 
-  // Manejar cambios de rol
-  const handleRoleChange = async (userId, roleId, action = 'assign') => {
+  const handleRoleChange = async (userId, newRole) => {
     try {
-      console.log('Gestionando rol:', { userId, roleId, action });
-  
-      if (action === 'assign') {
-        await assignUserRole(userId, roleId);
-      } else if (action === 'remove') {
-        await removeUserRole(userId, roleId);
-      }
-  
-      // Recargar roles del usuario
-      const response = await axios.get(
-        `${API_URL}/api/roles/user/${userId}`,
-        getHeaders()
-      );
-  
-      const updatedRoles = response.data?.data || response.data || [];
-      
-      setUserRoles(prev => ({
-        ...prev,
-        [userId]: updatedRoles
-      }));
-  
+      const updatedRole = await updateUserRole(userId, newRole);
       setUsers(prevUsers =>
-        prevUsers.map(user => {
-          if (user.user_id === userId) {
-            return {
-              ...user,
-              roles: updatedRoles,
-              role: updatedRoles.map(role => role.role_name).join(', ') || 'Sin rol'
-            };
-          }
-          return user;
-        })
+        prevUsers.map(user =>
+          user.id === userId ? { ...user, role: newRole } : user
+        )
       );
   
       setShowRoleModal(false);
@@ -128,11 +73,11 @@ const useUserManagement = () => {
       throw new Error(error.response?.data?.message || 'Error al gestionar el rol');
     }
   };
-  // Manejar eliminación de usuarios
+
   const handleDeleteUser = async (userId) => {
     try {
       await deleteUser(userId);
-      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+      setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
     } catch (error) {
       console.error('Error al eliminar usuario:', error);
     }

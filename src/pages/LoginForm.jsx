@@ -21,7 +21,7 @@ const LoginForm = () => {
     }
   
     try {
-      const loginResponse = await axios.post('http://localhost:5000/api/auth/login', { 
+      const loginResponse = await axios.post('http://localhost:3000/api/auth/login', { 
         email, 
         password 
       });
@@ -33,7 +33,7 @@ const LoginForm = () => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         try {
-          const userResponse = await axios.get('http://localhost:5000/api/auth/profile');
+          const userResponse = await axios.get('http://localhost:3000/api/auth/profile');
           console.log('Profile Response:', userResponse.data);
   
           if (userResponse.data.data) {
