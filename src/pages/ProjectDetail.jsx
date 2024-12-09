@@ -75,9 +75,10 @@ const ProjectDetail = () => {
     try {
       // Convertir la string de usuarios separada por comas a un array
       const userIds = taskData.assigned_to.split(',');
-      
+
       // Preparar la tarea con el formato correcto
       const modifiedTaskData = {
+        project_id: projectId,
         ...taskData,
         assigned_to: userIds[0], // Usar el primer usuario como assigned_to principal
         assignedUsers: userIds.join('|'),
@@ -86,7 +87,7 @@ const ProjectDetail = () => {
 
       // Crear la tarea
       const newTask = await createTask(projectId, modifiedTaskData);
-      
+
       // Procesar la tarea para mostrar correctamente los usuarios asignados
       const processedTask = {
         ...newTask,
@@ -229,7 +230,11 @@ const ProjectDetail = () => {
             ) : (
               <div className="divide-y divide-gray-200">
                 {tasks.map((task) => (
-                  <div key={task.task_id} className="p-4 hover:bg-gray-50">
+                  <div
+                    key={task.task_id}
+                    className="p-4 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => navigate(`/projects/${projectId}/tasks/${task.task_id}`)}
+                  >
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-medium text-gray-900">{task.title}</h3>

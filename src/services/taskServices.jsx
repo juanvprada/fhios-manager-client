@@ -1,3 +1,4 @@
+// taskServices.jsx
 import axios from 'axios';
 import useStore from '../store/store';
 
@@ -13,14 +14,17 @@ const getAuthHeader = () => {
 };
 
 export const createTask = async (projectId, taskData) => {
-    let processedTaskData = { ...taskData };
+    let processedTaskData = { 
+        ...taskData,
+        project_id: projectId
+    };
 
     // Si hay múltiples usuarios asignados (viene como string separada por comas)
     if (taskData.assigned_to && taskData.assigned_to.includes(',')) {
         const userIds = taskData.assigned_to.split(',');
         processedTaskData = {
-            ...taskData,
-            assigned_to: userIds[0], // Asignamos el primer usuario como principal
+            ...processedTaskData,
+            assigned_to: userIds[0],
             description: `${taskData.description || ''}\n<!--ASSIGNED_USERS:${userIds.join('|')}-->`
         };
     }
@@ -56,9 +60,28 @@ export const getProjectTasks = async (projectId) => {
         return {
             ...task,
             description: task.description?.replace(/<!--ASSIGNED_USERS:.*?-->/, '').trim(),
-            assignedUsers: assignedUsers.filter(Boolean) // Filtramos valores null o undefined
+            assignedUsers: assignedUsers.filter(Boolean)
         };
     });
+};
+
+export const getTaskById = async (taskId) => {
+    const response = await axios.get(
+        `${API_URL}/tasks/${taskId}`,
+        getAuthHeader()
+    );
+
+    // Procesar la tarea para extraer los usuarios asignados
+    const assignedUsersMatch = response.data.description?.match(/<!--ASSIGNED_USERS:(.*?)-->/);
+    const assignedUsers = assignedUsersMatch ? 
+        assignedUsersMatch[1].split('|') : 
+        [response.data.assigned_to];
+
+    return {
+        ...response.data,
+        description: response.data.description?.replace(/<!--ASSIGNED_USERS:.*?-->/, '').trim(),
+        assignedUsers: assignedUsers.filter(Boolean)
+    };
 };
 
 export const updateTask = async (taskId, taskData) => {
@@ -68,7 +91,7 @@ export const updateTask = async (taskId, taskData) => {
     if (taskData.assignedUsers) {
         processedTaskData = {
             ...taskData,
-            assigned_to: taskData.assignedUsers[0], // Usamos el primer usuario como principal
+            assigned_to: taskData.assignedUsers[0],
             description: `${taskData.description || ''}\n<!--ASSIGNED_USERS:${taskData.assignedUsers.join('|')}-->`
         };
     }
@@ -90,19 +113,9 @@ export const updateTask = async (taskId, taskData) => {
     };
 };
 
-export const assignTask = async (taskId, userId) => {
-    const response = await axios.post(
-        `${API_URL}/tasks/${taskId}/assign`,
-        { user_id: userId },
-        getAuthHeader()
-    );
-    return response.data;
-};
-
 export const deleteTask = async (taskId) => {
-    const response = await axios.delete(
+    await axios.delete(
         `${API_URL}/tasks/${taskId}`,
         getAuthHeader()
     );
-    return response.data;
 };

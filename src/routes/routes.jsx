@@ -1,4 +1,3 @@
-// routes.jsx
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "../layout/Layout";
 import Projects from "../pages/Projects";
@@ -9,6 +8,7 @@ import LoginForm from "../pages/LoginForm";
 import ProtectedRoute from "../components/ProtectedRoute";
 import Dashboard from "../pages/Dashboard";
 import ProjectDetail from '../pages/ProjectDetail';
+import TaskDetail from '../pages/TaskDetail';
 
 export const router = createBrowserRouter([
   {
@@ -47,7 +47,11 @@ export const router = createBrowserRouter([
       },
       {
         path: '/projects/:projectId',
-        element: <ProjectDetail />
+        element: <ProtectedRoute><ProjectDetail /></ProtectedRoute>,
+      },
+      {
+        path: '/projects/:projectId/tasks/:taskId',
+        element: <ProtectedRoute><TaskDetail /></ProtectedRoute>,
       },
       {
         path: "users",
