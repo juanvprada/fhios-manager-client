@@ -1,4 +1,5 @@
 //import React from "react";
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import menuItemsConfig from "./menuItemsConfig";
 import StatisticsCard from "./StatisticsCard";
@@ -61,6 +62,12 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       )}
     </>
   );
+};
+
+//Validación de propTypes
+Sidebar.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  setIsOpen: PropTypes.func.isRequired,
 };
 
 export default Sidebar;
