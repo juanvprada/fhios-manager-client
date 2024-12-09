@@ -4,31 +4,33 @@ import { persist } from 'zustand/middleware';
 const useStore = create(
   persist(
     (set) => ({
-      // Estado inicial
       user: null,
       token: null,
       isAuthenticated: false,
+      role: null, // Añadimos el rol al estado
 
-      // Acciones para actualizar el estado
-      login: (userData, token) => set({ 
+      login: (userData, token, role = 'admin') => set({ 
         user: userData, 
         token: token, 
-        isAuthenticated: true 
+        isAuthenticated: true,
+        role: role 
       }),
 
       logout: () => set({ 
         user: null, 
         token: null, 
-        isAuthenticated: false 
+        isAuthenticated: false,
+        role: null 
       }),
 
-      // Método para actualizar usuario
       updateUser: (userData) => set(state => ({ 
         user: { ...state.user, ...userData } 
-      }))
+      })),
+
+      setRole: (role) => set({ role })
     }),
     {
-      name: 'auth-storage', // nombre en localStorage
+      name: 'auth-storage',
       getStorage: () => localStorage
     }
   )
