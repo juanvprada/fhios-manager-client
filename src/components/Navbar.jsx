@@ -35,7 +35,7 @@ const Navbar = ({ isOpen, setIsOpen }) => {
         </button>
 
         <div className="flex items-center">
-          <div className="flex items-center justify-center h-10 w-10 bg-primary-500 text-white rounded-full mr-4">
+        <div className="hidden md:flex items-center justify-center h-10 w-10 bg-primary-500 text-white rounded-full mr-4">
             <span className="font-bold text-lg">FM</span>
           </div>
           <h1 className="text-xl font-bold text-primary-600 hidden sm:block">Fhios Manager</h1>
