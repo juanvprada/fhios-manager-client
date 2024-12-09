@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import useStore from "../store/store";
+import PropTypes from 'prop-types';
+
 
 // Componente Modal para Editar Usuario
 const EditUserModal = ({
@@ -830,3 +832,21 @@ const CreateUserModal = ({ isOpen, onClose, roles, onSave }) => {
     </div>
   );
 };
+
+//validar tipos de datos
+UserList.propTypes = {
+  user: PropTypes.shape({
+    user_id: PropTypes.number.isRequired,
+    first_name: PropTypes.string.isRequired,
+    last_name: PropTypes.string.isRequired,
+    email: PropTypes.string.isRequired,
+    status: PropTypes.string.isRequired,
+  }).isRequired,
+  roles: PropTypes.arrayOf(PropTypes.string).isRequired,
+  userRoles: PropTypes.arrayOf(PropTypes.string).isRequired,
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+};
+

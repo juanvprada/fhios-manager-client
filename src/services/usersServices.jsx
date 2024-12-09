@@ -18,8 +18,8 @@ const getHeaders = () => {
 export const getUsers = async () => {
   try {
     const [usersResponse, rolesResponse] = await Promise.all([
-      axios.get(`${API_URL}/users`, getAuthHeader()),
-      axios.get(`${API_URL}/user_roles`, getAuthHeader())
+      axios.get(`${API_URL}/users`, getHeaders()),
+      axios.get(`${API_URL}/user_roles`, getHeaders())
     ]);
     
     // Formatear los datos combinando usuarios y roles
@@ -60,7 +60,7 @@ export const getAllUserRoles = async () => {
 export const updateUserRole = async (userId, roleName) => {
   try {
     // Primero obtener el role_id basado en el nombre del rol
-    const rolesResponse = await axios.get(`${API_URL}/roles`, getAuthHeader());
+    const rolesResponse = await axios.get(`${API_URL}/roles`, getHeaders());
     const role = rolesResponse.data.find(r => r.role_name === roleName);
     
     if (!role) {
@@ -70,7 +70,7 @@ export const updateUserRole = async (userId, roleName) => {
     const response = await axios.post(`${API_URL}/user_roles`, {
       user_id: userId,
       role_id: role.role_id
-    }, getAuthHeader());
+    }, getHeaders());
 
     return {
       ...response.data,
@@ -84,7 +84,7 @@ export const updateUserRole = async (userId, roleName) => {
 
 export const deleteUser = async (userId) => {
   try {
-    await axios.delete(`${API_URL}/users/${userId}`, getAuthHeader());
+    await axios.delete(`${API_URL}/users/${userId}`, getHeaders());
   } catch (error) {
     console.error('Error deleting user:', error);
     throw error;
