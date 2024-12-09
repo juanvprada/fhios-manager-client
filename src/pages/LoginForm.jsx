@@ -11,6 +11,9 @@ const LoginForm = () => {
   // Obtenemos la función login del store
   const login = useStore((state) => state.login);
   const navigate = useNavigate();
+  
+  // Definir la URL base de la API desde la variable de entorno
+  const API_URL = process.env.REACT_APP_API_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +24,7 @@ const LoginForm = () => {
     }
   
     try {
-      const loginResponse = await axios.post('http://localhost:5000/api/auth/login', { 
+      const loginResponse = await axios.post(`${API_URL}/auth/login`, { 
         email, 
         password 
       });
@@ -33,7 +36,7 @@ const LoginForm = () => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         try {
-          const userResponse = await axios.get('http://localhost:5000/api/auth/profile');
+          const userResponse = await axios.get(`${API_URL}/auth/profile`);
           console.log('Profile Response:', userResponse.data);
   
           if (userResponse.data.data) {
