@@ -48,8 +48,8 @@ const Sidebar = () => {
       )}
 
       {/* Sidebar completo (visible en Desktop) */}
-      <div className="hidden md:flex md:flex-col md:fixed md:top-0 md:left-0 md:w-64 md:h-screen bg-gradient-to-b from-secondary-50 via-light to-secondary-100 shadow-xl">
-        <nav className="p-6">
+      <div className="hidden md:flex md:flex-col md:fixed md:top-14 md:left-0 md:w-64 md:h-[calc(100%-3.5rem)] bg-gradient-to-b from-secondary-50 via-light to-secondary-100 shadow-xl">
+        <nav className="p-6 overflow-y-auto">
           <ul>
             {menuItemsConfig.map((item, index) => (
               <li
@@ -73,9 +73,3 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
-
-
-
-
-
-

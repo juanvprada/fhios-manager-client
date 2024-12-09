@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Home, Users, Briefcase, Settings, Bell, Search, HelpCircle, ChevronDown } from 'lucide-react';
+import { logoImg } from '../utils/index';
 
 const Navbar = ({ 
   userName, 
@@ -32,11 +33,11 @@ const Navbar = ({
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50 flex items-center justify-between px-4 py-2 h-14">
+    <nav className="sticky top-0 bg-white shadow-md z-10 flex items-center justify-between px-4 py-2 h-14">
       {/* Logo Section */}
       <div className="flex items-center">
         <img 
-          src="/path/to/monday-logo.svg" 
+          src= {logoImg} 
           alt="Monday.com Logo" 
           className="h-8 mr-4"
         />
