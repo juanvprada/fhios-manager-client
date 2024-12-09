@@ -16,52 +16,43 @@ const LoginForm = () => {
     e.preventDefault();
   
     if (!email || !password) {
-      setError("Por favor, completa todos los campos.");
+      setError('Por favor, completa todos los campos.');
       return;
     }
   
     try {
-      const loginResponse = await axios.post("http://localhost:3000/api/auth/login", {
-        email,
-        password,
+      const loginResponse = await axios.post('http://localhost:5000/api/auth/login', { 
+        email, 
+        password 
       });
   
       if (loginResponse.data.token) {
-        const token = loginResponse.data.token;
+        const { token, role } = loginResponse.data; // Extraemos también el role
         
-        // Configurar token en axios para futuras peticiones
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  
+        // Configurar axios con el token
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
         try {
-          // Obtener perfil con el token ya configurado
-          const profileResponse = await axios.get(
-            "http://localhost:3000/api/auth/profile",
-            {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            }
-          );
+          const userResponse = await axios.get('http://localhost:5000/api/auth/profile');
+          console.log('Profile Response:', userResponse.data);
   
-          // Guardar datos en el store
-          login(profileResponse.data.data || profileResponse.data, token);
-          
-          // Redirigir al dashboard
-          navigate("/dashboard");
+          if (userResponse.data.data) {
+            // Pasar también el role al login
+            login(userResponse.data.data, token, role);
+            navigate('/dashboard');
+          } else {
+            setError('Error al obtener datos del usuario');
+          }
         } catch (profileError) {
-          console.error("Error al obtener perfil:", profileError);
-          // Si no podemos obtener el perfil, aún podemos proceder con los datos del login
-          login({ email }, token);
-          navigate("/dashboard");
+          console.error('Error al obtener perfil:', profileError);
+          setError('Error al obtener información del usuario');
         }
       } else {
-        setError("Error en la respuesta del servidor");
+        setError('Error en la respuesta del servidor');
       }
     } catch (error) {
-      console.error("Error de autenticación:", error);
-      setError(
-        error.response?.data?.error || "Error al conectar con el servidor"
-      );
+      console.error('Error de autenticación:', error);
+      setError(error.response?.data?.error || 'Error al conectar con el servidor');
     }
   };
 

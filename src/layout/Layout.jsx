@@ -1,7 +1,6 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar.jsx";
-import { userService } from "../services/services";
 
 const Layout = () => {
   const navigate = useNavigate();
@@ -17,10 +16,13 @@ const Layout = () => {
   };
 
   return (
-    <div className="flex">
-      <Sidebar  className=""/>
-      <div className="flex-1  p-4 mt-10">
-        <Outlet />
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <div className="flex mt-14">
+        <Sidebar />
+        <div className="flex-1 p-4 md:ml-64">
+          <Outlet />
+        </div>
       </div>
     </div>
   );
