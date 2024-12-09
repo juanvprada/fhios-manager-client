@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useProjects from "../hooks/useProject";
 
 const Projects = () => {
@@ -13,10 +13,6 @@ const Projects = () => {
     sortOrder,
     setSortOrder
   } = useProjects();
-
-  const handleProjectClick = (projectId) => {
-    navigate(`/projects/${projectId}`);
-  };
 
   if (loading) {
     return (
@@ -72,7 +68,7 @@ const Projects = () => {
                 filteredProjects.map((project) => (
                   <div
                     key={project.project_id}
-                    onClick={() => handleProjectClick(project.project_id)}
+                    onClick={() => navigate(`/projects/${project.project_id}`)}
                     className="p-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 bg-white cursor-pointer"
                   >
                     <h2 className="text-lg font-poppins font-semibold text-primary-500">
@@ -82,10 +78,11 @@ const Projects = () => {
                       {project.description || 'Sin descripción'}
                     </p>
                     <div className="mt-4 flex justify-between items-center">
-                      <span className={`px-2 py-1 text-xs rounded-full ${project.status === 'planning' ? 'bg-yellow-100 text-yellow-800' :
-                          project.status === 'active' ? 'bg-green-100 text-green-800' :
-                            'bg-gray-100 text-gray-800'
-                        }`}>
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        project.status === 'planning' ? 'bg-yellow-100 text-yellow-800' :
+                        project.status === 'active' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
                         {project.status}
                       </span>
                       <span className="text-sm text-gray-500">
@@ -100,10 +97,13 @@ const Projects = () => {
               )}
             </div>
           </div>
-          );
+        </div>
+      </div>
+    </div>
+  );
 };
 
-          export default Projects;
+export default Projects;
 
 
 

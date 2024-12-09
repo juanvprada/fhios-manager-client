@@ -17,7 +17,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <h1 className="text-2xl font-poppins">Inicio</h1>,
+        element: <h1 className="text-2xl font-poppins"></h1>,
       },
       {
         path: "registerform",
