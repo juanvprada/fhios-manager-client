@@ -45,6 +45,7 @@ const TaskDetail = () => {
                 setTask(taskData);
                 setEditedTask({
                     ...taskData,
+                    assignedUsers: taskData.assignedUsers || [],
                     estimated_hours: taskData.estimated_hours
                 });
                 setAvailableUsers(usersData);
@@ -88,7 +89,100 @@ const TaskDetail = () => {
             setError('No se pudo actualizar la tarea. Por favor, intenta de nuevo.');
         }
     };
+    const renderAssignedUsers = () => (
+        <div className="bg-gray-50 rounded-lg p-6">
+            <h3 className="text-sm font-medium text-gray-500 mb-4">
+                Usuarios asignados
+            </h3>
+            {isEditing ? (
+                <>
+                    <div className="border border-gray-300 rounded-lg w-full p-3 max-h-[300px] overflow-y-auto">
+                        {availableUsers.map((user) => (
+                            <div
+                                key={user.user_id}
+                                className="flex items-center p-2 hover:bg-gray-50"
+                            >
+                                <input
+                                    type="checkbox"
+                                    id={`user-${user.user_id}`}
+                                    value={user.user_id.toString()}
+                                    checked={editedTask.assignedUsers.includes(user.user_id.toString())}
+                                    onChange={(e) => {
+                                        const userId = e.target.value;
+                                        setEditedTask(prev => ({
+                                            ...prev,
+                                            assignedUsers: e.target.checked
+                                                ? [...prev.assignedUsers, userId]
+                                                : prev.assignedUsers.filter(id => id !== userId)
+                                        }));
+                                    }}
+                                    className="mr-3"
+                                />
+                                <label htmlFor={`user-${user.user_id}`}>
+                                    {user.name}
+                                </label>
+                            </div>
+                        ))}
+                    </div>
 
+                    <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                        <h3 className="text-sm font-medium text-primary-500 mb-2">
+                            Usuarios seleccionados ({editedTask.assignedUsers.length}):
+                        </h3>
+                        <ul className="list-disc pl-5 text-secondary-700 space-y-1">
+                            {editedTask.assignedUsers.length === 0 ? (
+                                <li>No hay usuarios seleccionados</li>
+                            ) : (
+                                editedTask.assignedUsers.map((userId) => {
+                                    const user = availableUsers.find(
+                                        (u) => u.user_id.toString() === userId
+                                    );
+                                    return (
+                                        <li key={userId} className="flex justify-between items-center">
+                                            <span>{user ? user.name : 'Usuario desconocido'}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setEditedTask(prev => ({
+                                                        ...prev,
+                                                        assignedUsers: prev.assignedUsers.filter(id => id !== userId)
+                                                    }));
+                                                }}
+                                                className="text-red-500 hover:text-red-700 text-sm"
+                                            >
+                                                Eliminar
+                                            </button>
+                                        </li>
+                                    );
+                                })
+                            )}
+                        </ul>
+                    </div>
+                </>
+            ) : (
+                <div className="flex flex-wrap gap-2">
+                    {task.assignedUsers?.map((userId) => {
+                        const user = availableUsers.find(
+                            (u) => u.user_id.toString() === userId
+                        );
+                        return (
+                            <div
+                                key={userId}
+                                className="flex items-center bg-white px-4 py-2 rounded-lg shadow-sm"
+                            >
+                                <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center mr-2">
+                                    <FiUser className="w-4 h-4 text-primary-600" />
+                                </div>
+                                <span className="text-sm font-medium text-gray-700">
+                                    {user ? user.name : 'Usuario desconocido'}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
     if (loading) {
         return (
             <div className="p-6 md:ml-64 flex justify-center items-center">
@@ -305,55 +399,9 @@ const TaskDetail = () => {
                             </div>
 
                             {/* Usuarios asignados */}
-                            <div className="bg-gray-50 rounded-lg p-6">
-                                <h3 className="text-sm font-medium text-gray-500 mb-4">
-                                    Usuarios asignados
-                                </h3>
-                                <div className="flex flex-wrap gap-2">
-                                    {isEditing ? (
-                                        <select
-                                            multiple
-                                            value={editedTask.assignedUsers}
-                                            onChange={(e) =>
-                                                setEditedTask({
-                                                    ...editedTask,
-                                                    assignedUsers: Array.from(
-                                                        e.target.selectedOptions,
-                                                        (option) => option.value
-                                                    ),
-                                                })
-                                            }
-                                            className="w-full p-2 border rounded-lg"
-                                        >
-                                            {availableUsers.map((user) => (
-                                                <option key={user.user_id} value={user.user_id.toString()}>
-                                                    {user.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    ) : (
-                                        task.assignedUsers?.map((userId) => {
-                                            const user = availableUsers.find(
-                                                (u) => u.user_id.toString() === userId
-                                            );
-                                            return (
-                                                <div
-                                                    key={userId}
-                                                    className="flex items-center bg-white px-4 py-2 rounded-lg shadow-sm"
-                                                >
-                                                    <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center mr-2">
-                                                        <FiUser className="w-4 h-4 text-primary-600" />
-                                                    </div>
-                                                    <span className="text-sm font-medium text-gray-700">
-                                                        {user ? user.name : 'Usuario desconocido'}
-                                                    </span>
-                                                </div>
-                                            );
-                                        })
-                                    )}
-                                </div>
-                            </div>
+                            {renderAssignedUsers()}
                         </div>
+
                         <DeleteConfirmationModal
                             isOpen={showDeleteModal}
                             onClose={() => setShowDeleteModal(false)}
@@ -376,6 +424,7 @@ const TaskDetail = () => {
             </div>
         </div>
     );
-}
+};
 
 export default TaskDetail;
+
