@@ -1,4 +1,4 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 
 const DeleteConfirmationModal = ({
   isOpen,
@@ -37,6 +37,16 @@ const DeleteConfirmationModal = ({
       </div>
     </div>
   );
+};
+
+DeleteConfirmationModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  title: PropTypes.string,
+  message: PropTypes.string,
+  confirmText: PropTypes.string,
+  cancelText: PropTypes.string
 };
 
 export default DeleteConfirmationModal;
