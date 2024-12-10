@@ -28,6 +28,7 @@ const ProjectDetail = () => {
   const [editedProject, setEditedProject] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [assignedUsers, setAssignedUsers] = useState([]);
+  const [creatorName, setCreatorName] = useState('Desconocido');
 
   const { projectId } = useParams();
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ const ProjectDetail = () => {
 
   const fetchData = async () => {
     if (!isAuthenticated || !token) {
-      setError("No estás autenticado");
+      setError('No estás autenticado');
       setLoading(false);
       return;
     }
@@ -64,30 +65,50 @@ const ProjectDetail = () => {
       const [projectData, tasksData, usersData] = await Promise.all([
         getProjectById(projectId),
         getProjectTasks(projectId),
-        getUsers()
+        getUsers(),
       ]);
+
       console.log('Datos del proyecto recibidos:', projectData);
-      console.log('Datos del proyecto:', projectData);
       console.log('Usuarios disponibles:', usersData);
+
+      // Buscar el creador por ID
+      console.log('ID del creador:', projectData.created_by);
+      const creator = usersData.find(
+        (user) => parseInt(user.user_id) === parseInt(projectData.created_by)
+      );
+      console.log('Creador encontrado:', creator);
+
+      // Depurar configuración de creatorName
+      if (creator) {
+        const name = creator.name; // Usar el nombre directamente
+        console.log('Nombre del creador configurado:', name);
+        setCreatorName(name);
+      } else {
+        console.log('Creador no encontrado, estableciendo como Desconocido');
+        setCreatorName('Desconocido');
+      }
+
       setProject(projectData);
       setEditedProject({
         ...projectData,
-        assignedUsers: projectData.assignedUsers || []
+        assignedUsers: projectData.assignedUsers || [],
       });
       setAssignedUsers(projectData.assignedUsers || []);
       setTasks(tasksData);
       setAvailableUsers(usersData);
       setError(null);
     } catch (error) {
-      console.error("Error al cargar los datos:", error);
+      console.error('Error al cargar los datos:', error);
       setError(
         error.response?.data?.message ||
-        "Error al cargar los datos del proyecto. Por favor, intenta de nuevo."
+        'Error al cargar los datos del proyecto. Por favor, intenta de nuevo.'
       );
     } finally {
       setLoading(false);
     }
   };
+
+
 
   useEffect(() => {
     fetchData();
@@ -271,9 +292,11 @@ const ProjectDetail = () => {
                     <span>Creado el: {new Date(project.created_at).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center text-gray-600">
+                    {console.log('Renderizando nombre del creador:', creatorName)}
                     <FiUsers className="w-5 h-5 mr-3 text-primary-500" />
-                    <span>Creado por: {project.created_by || "Desconocido"}</span>
+                    <span>Creado por: {creatorName}</span>
                   </div>
+
                   <div className="flex items-center text-gray-600">
                     <FiFlag className="w-5 h-5 mr-3 text-primary-500" />
                     {isEditing ? (

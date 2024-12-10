@@ -112,7 +112,7 @@ const TaskDetail = () => {
     const handleDocumentUpload = async (documentData) => {
         try {
             const newDocument = await createDocument(documentData);
-            setDocuments([...documents, { ...newDocument, description: documentData.get('description') }]);
+            setDocuments([...documents, { ...newDocument, description: documentData.has('description') ? documentData.get('description') : '' }]);
             setShowDocumentUploadModal(false);
         } catch (error) {
             console.error('Error al subir el documento:', error);

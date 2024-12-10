@@ -34,14 +34,22 @@ export const createProject = async (projectData) => {
 };
 export const getProjects = async () => {
   const response = await axios.get(API_URL, getAuthHeader());
-  
-  // Limpiar la descripción de cada proyecto
-  const cleanedProjects = response.data.map(project => {
+
+  const users = await axios.get('http://localhost:3000/api/users', getAuthHeader());
+
+  // Mapear IDs de usuarios a nombres
+  const userMap = users.data.reduce((map, user) => {
+    map[user.user_id] = `${user.first_name} ${user.last_name}`;
+    return map;
+  }, {});
+
+  const cleanedProjects = response.data.map((project) => {
     const description = project.description || '';
     return {
       ...project,
       description: description.replace(/<!--ASSIGNED_USERS:.*?-->/, '').trim(),
-      assignedUsers: description.match(/<!--ASSIGNED_USERS:(.*?)-->/)?.slice(1) || []
+      assignedUsers: description.match(/<!--ASSIGNED_USERS:(.*?)-->/)?.slice(1) || [],
+      created_by_name: userMap[project.created_by],
     };
   });
 

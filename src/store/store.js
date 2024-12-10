@@ -9,29 +9,37 @@ const useStore = create(
       isAuthenticated: false,
       role: null, // Añadimos el rol al estado
 
-      login: (userData, token, role = 'admin') => set({ 
-        user: userData, 
-        token: token, 
-        isAuthenticated: true,
-        role: role 
-      }),
+      login: (userData, token, role = 'admin') => {
+        const user = {
+          ...userData,
+          user_id: userData.user_id || userData.id, // Aseguramos que `user_id` esté presente
+        };
+
+        set({
+          user,
+          token,
+          isAuthenticated: true,
+          role,
+        });
+      },
 
       logout: () => set({ 
         user: null, 
         token: null, 
         isAuthenticated: false,
-        role: null 
+        role: null,
       }),
 
-      updateUser: (userData) => set(state => ({ 
-        user: { ...state.user, ...userData } 
-      })),
+      updateUser: (userData) =>
+        set((state) => ({
+          user: { ...state.user, ...userData, user_id: userData.user_id || userData.id },
+        })),
 
-      setRole: (role) => set({ role })
+      setRole: (role) => set({ role }),
     }),
     {
       name: 'auth-storage',
-      getStorage: () => localStorage
+      getStorage: () => localStorage,
     }
   )
 );

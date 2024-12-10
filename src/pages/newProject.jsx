@@ -7,6 +7,8 @@ import axios from 'axios';
 const NewProject = () => {
   const navigate = useNavigate();
   const { token } = useStore();
+  const { user } = useStore();
+
 
   // Estados
   const [projectName, setProjectName] = useState("");
@@ -60,10 +62,12 @@ const NewProject = () => {
         start_date: duration.start,
         end_date: duration.end,
         status: 'planning',
-        selectedUsers: selectedUsers.map(id => id.toString())
+        selectedUsers: selectedUsers.map((id) => id.toString()),
+        created_by: user.user_id,
       };
-      console.log("Enviando usuarios:", selectedUsers);
-      console.log("Enviando projectData:", projectData);
+
+      console.log("Datos enviados al backend:", projectData);
+
       await createProject(projectData);
       navigate("/projects");
     } catch (err) {
@@ -74,9 +78,11 @@ const NewProject = () => {
     }
   };
 
+
+
   return (
     <div className="flex justify-center items-start min-h-screen bg-gray-50 overflow-x-hidden">
-  <div className="max-w-xl w-full p-6 sm:p-8 box-border">
+      <div className="max-w-xl w-full p-6 sm:p-8 box-border">
         <h1 className="text-2xl text-center font-poppins font-bold text-primary-500 mb-4">
           Crear Nuevo Proyecto
         </h1>
