@@ -4,6 +4,7 @@ import { getProjectById, updateProject, deleteProject } from '../services/projec
 import { getProjectTasks, createTask } from '../services/taskServices';
 import { getUsers } from '../services/usersServices';
 import useStore from '../store/store';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import {
   FiArrowLeft,
   FiCalendar,
@@ -24,6 +25,7 @@ const ProjectDetail = () => {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProject, setEditedProject] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const { projectId } = useParams();
   const navigate = useNavigate();
@@ -64,7 +66,7 @@ const ProjectDetail = () => {
       ]);
 
       setProject(projectData);
-      setEditedProject(projectData); // Inicializar el estado de edición
+      setEditedProject(projectData);
       setTasks(tasksData);
       setAvailableUsers(usersData);
       setError(null);
@@ -122,15 +124,17 @@ const ProjectDetail = () => {
     setIsEditing(true);
   };
 
-  const handleDeleteClick = async () => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer.')) {
-      try {
-        await deleteProject(projectId);
-        navigate('/projects');
-      } catch (error) {
-        console.error('Error al eliminar el proyecto:', error);
-        setError('No se pudo eliminar el proyecto. Por favor, intenta de nuevo.');
-      }
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const onConfirmDelete = async () => {
+    try {
+      await deleteProject(projectId);
+      navigate('/projects');
+    } catch (error) {
+      console.error('Error al eliminar el proyecto:', error);
+      setError('No se pudo eliminar el proyecto. Por favor, intenta de nuevo.');
     }
   };
 
@@ -462,6 +466,13 @@ const ProjectDetail = () => {
           </div>
         </div>
       </div>
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={onConfirmDelete}
+        title="Eliminar Proyecto"
+        message="¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer."
+      />
 
       {/* Modal de Nueva Tarea */}
       {showTaskForm && (

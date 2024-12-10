@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getTaskById, updateTask, deleteTask } from '../services/taskServices';
 import { getUsers } from '../services/usersServices';
 import useStore from '../store/store';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import {
     FiArrowLeft,
     FiCalendar,
@@ -19,6 +20,7 @@ const TaskDetail = () => {
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editedTask, setEditedTask] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const { projectId, taskId } = useParams();
     const navigate = useNavigate();
@@ -65,15 +67,17 @@ const TaskDetail = () => {
         setIsEditing(true);
     };
 
-    const handleDeleteClick = async () => {
-        if (window.confirm('¿Estás seguro de que deseas eliminar esta tarea? Esta acción no se puede deshacer.')) {
-            try {
-                await deleteTask(taskId);
-                navigate(`/projects/${projectId}`);
-            } catch (error) {
-                console.error('Error al eliminar la tarea:', error);
-                setError('No se pudo eliminar la tarea. Por favor, intenta de nuevo.');
-            }
+    const handleDeleteClick = () => {
+        setShowDeleteModal(true);
+    };
+
+    const onConfirmDelete = async () => {
+        try {
+            await deleteTask(taskId);
+            navigate(`/projects/${projectId}`);
+        } catch (error) {
+            console.error('Error al eliminar la tarea:', error);
+            setError('No se pudo eliminar la tarea. Por favor, intenta de nuevo.');
         }
     };
 
@@ -309,6 +313,13 @@ const TaskDetail = () => {
                                 </div>
                             </div>
                         </div>
+                        <DeleteConfirmationModal
+                            isOpen={showDeleteModal}
+                            onClose={() => setShowDeleteModal(false)}
+                            onConfirm={onConfirmDelete}
+                            title="Eliminar Tarea"
+                            message="¿Estás seguro de que deseas eliminar esta tarea? Esta acción no se puede deshacer."
+                        />
 
                         {/* Acciones */}
                         <div className="flex flex-wrap gap-4 justify-end border-t pt-6">
