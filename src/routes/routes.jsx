@@ -9,7 +9,8 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import Dashboard from "../pages/Dashboard";
 import ProjectDetail from '../pages/ProjectDetail';
 import TaskDetail from '../pages/TaskDetail';
-import useStore from '../store/store'; // Added useStore import
+import CreateRole from '../pages/CreateRole';
+import RolesManagement from "../pages/RolesManagement";
 
 // Create the router with routes
 export const router = createBrowserRouter([
@@ -32,6 +33,14 @@ export const router = createBrowserRouter([
       {
         path: "dashboard",
         element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
+      },
+      {
+        path: "roles/create",
+        element: <CreateRole />
+      },
+      {
+        path: "roles",
+        element: <RolesManagement />
       },
       {
         path: "projects",
