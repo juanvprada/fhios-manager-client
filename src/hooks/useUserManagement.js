@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import useStore from '../store/store';
-import axios from 'axios';
 
 const useUserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -12,7 +11,6 @@ const useUserManagement = () => {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [roles, setRoles] = useState([]);
 
   const token = useStore(state => state.token);
   const API_URL = 'http://localhost:3000/api';
@@ -24,7 +22,8 @@ const useUserManagement = () => {
     }
   });
 
-  const fetchData = async () => {
+  // Usamos useCallback para estabilizar fetchData
+  const fetchData = useCallback(async () => {
     try {
       if (!token) {
         setError("No estás autenticado");
@@ -88,10 +87,11 @@ const useUserManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]); // Dependencia de token para que se ejecute cada vez que cambie el token
+
   useEffect(() => {
     fetchData();
-  }, [token]);
+  }, [fetchData]); // Se incluye fetchData como dependencia ahora
 
   const filteredUsers = users?.filter((user) =>
     (user.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
