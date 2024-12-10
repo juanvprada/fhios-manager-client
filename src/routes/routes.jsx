@@ -1,5 +1,5 @@
 // routes.jsx
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import Layout from "../layout/Layout";
 import Projects from "../pages/Projects";
 import UserManagement from "../pages/UserManagement";
@@ -14,70 +14,69 @@ import RolesManagement from "../pages/RolesManagement";
 
 export const router = createBrowserRouter([
   {
-    
-
+    path: "/login",
+    element: <LoginForm />,
+  },
+  {
     path: "/",
-    element: <Layout />,
+    element: <ProtectedRoute><Layout /></ProtectedRoute>,
     children: [
       {
         index: true,
         element: <h1 className="text-2xl font-poppins">Inicio</h1>,
       },
       {
-        path: "login",
-    element: <LoginForm />,
+        path: "registerform",
+        element: <ProtectedRoute requiredPermission="canManageUsers">
+          <RegisterForm />
+        </ProtectedRoute>,
       },
       {
-       /*  Ruta protegida para proyectos */
-        element: <ProtectedRoute />,
+        path: "dashboard",
+        element: <ProtectedRoute requiredPermission="canAccessDashboard">
+          <Dashboard />
+        </ProtectedRoute>,
+      },
+      {
+        path: "projects",
+        element: <ProtectedRoute requiredPermission="canViewProjects">
+          <Outlet />
+        </ProtectedRoute>,
         children: [
           {
-            path: "registerform",
-            element: <RegisterForm />,
+            index: true,
+            element: <Projects />,
           },
           {
-            path: "dashboard",
-            element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
+            path: "nuevo",
+            element: <ProtectedRoute requiredPermission="canCreateProjects">
+              <NewProject />
+            </ProtectedRoute>,
           },
-          {
-            path: "projects",
-            element: <ProtectedRoute />,
-            children: [
-              {
-                index: true,
-                element: <Projects />,
-              },
-              {
-                path: "nuevo",
-                element: <NewProject />,
-              },
-            ],
-          },
-          {
-            path: '/projects/:projectId',
-            element: <ProjectDetail />
-          },
-          {
-            path: "users",
-            element: <ProtectedRoute adminOnly={true} />,
-            children: [
-              {
-                index: true,
-                element: <UserManagement />,
-              },
-            ],
-          },
-          {
-            path: "roles/create",
-            element: <CreateRole />
-          },
-          {
-            path: "roles",
-            element: <RolesManagement />
-          }
         ],
       },
+      {
+        path: "users",
+        element: <ProtectedRoute requiredPermission="canManageUsers">
+          <UserManagement />
+        </ProtectedRoute>,
+      },
+      {
+        path: "roles",
+        element: <ProtectedRoute requiredPermission="canManageRoles">
+          <Outlet />
+        </ProtectedRoute>,
+        children: [
+          {
+            index: true,
+            element: <RolesManagement />,
+          },
+          {
+            path: "create",
+            element: <CreateRole />
+          }
+        ],
+      }
     ],
-
   },
 ]);

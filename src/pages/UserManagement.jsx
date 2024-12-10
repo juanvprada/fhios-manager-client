@@ -19,6 +19,7 @@ const UserManagement = () => {
     error,
     roles,
     userRoles,
+    handleUpdateUser
   } = useUserManagement();
 
   const formatDate = (dateString) => {
@@ -171,75 +172,213 @@ const UserManagement = () => {
       </div>
 
       {showRoleModal && selectedUser && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg p-4 sm:p-6 max-w-sm w-full mx-4">
-      <h3 className="text-lg font-medium text-gray-900 mb-4">
-        Gestionar roles de {selectedUser.name}
-      </h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-6">
+              Editar Usuario: {selectedUser.name}
+            </h3>
 
-      <div className="mb-4">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Roles actuales:</h4>
-        <div className="flex flex-wrap gap-2">
-          {userRoles[selectedUser.user_id]?.map(role => (
-            <div key={role.role_id} className="flex items-center gap-2 bg-blue-100 px-3 py-1 rounded-full">
-              <span className="text-sm text-blue-800">{role.role_name}</span>
+            <div className="flex gap-8 m-4">
+
+{/* Formulario de información del usuario */}
+<div className="mb-6">
+              <h4 className="text-sm font-medium text-gray-700 mb-4">
+                Información Personal
+              </h4>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre
+                  </label>
+                  <input
+                    type="text"
+                    value={selectedUser.first_name || ""}
+                    onChange={(e) =>
+                      setSelectedUser((prev) => ({
+                        ...prev,
+                        first_name: e.target.value,
+                      }))
+                    }
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Apellido
+                  </label>
+                  <input
+                    type="text"
+                    value={selectedUser.last_name || ""}
+                    onChange={(e) =>
+                      setSelectedUser((prev) => ({
+                        ...prev,
+                        last_name: e.target.value,
+                      }))
+                    }
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Correo Electrónico
+                  </label>
+                  <input
+                    type="email"
+                    value={selectedUser.email || ""}
+                    onChange={(e) =>
+                      setSelectedUser((prev) => ({
+                        ...prev,
+                        email: e.target.value,
+                      }))
+                    }
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nueva Contraseña
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Dejar en blanco para mantener la actual"
+                    onChange={(e) =>
+                      setSelectedUser((prev) => ({
+                        ...prev,
+                        password: e.target.value,
+                      }))
+                    }
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Estado
+                  </label>
+                  <select
+                    value={selectedUser.status || "active"}
+                    onChange={(e) =>
+                      setSelectedUser((prev) => ({
+                        ...prev,
+                        status: e.target.value,
+                      }))
+                    }
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    <option value="active">Activo</option>
+                    <option value="inactive">Inactivo</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Sección de Roles */}
+            <div className="mb-6">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">
+                Roles Asignados
+              </h4>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {userRoles[selectedUser.user_id]?.map((role) => (
+                  <div
+                    key={role.role_id}
+                    className="flex items-center gap-2 bg-blue-100 px-3 py-1 rounded-full"
+                  >
+                    <span className="text-sm text-blue-800">
+                      {role.role_name}
+                    </span>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await handleRoleChange(
+                            selectedUser.user_id,
+                            role.role_id,
+                            "remove"
+                          );
+                          alert("Rol eliminado exitosamente");
+                        } catch (error) {
+                          alert(error.message);
+                        }
+                      }}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <FiX className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                {(!userRoles[selectedUser.user_id] ||
+                  userRoles[selectedUser.user_id].length === 0) && (
+                  <span className="text-sm text-gray-500">
+                    Sin roles asignados
+                  </span>
+                )}
+              </div>
+
+              <h4 className="text-sm font-medium text-gray-700 mb-2">
+                Asignar Nuevo Rol
+              </h4>
+              <div className="space-y-2">
+                {roles
+                  .filter(
+                    (role) =>
+                      !userRoles[selectedUser.user_id]?.some(
+                        (userRole) => userRole.role_id === role.role_id
+                      )
+                  )
+                  .map((role) => (
+                    <button
+                      key={role.role_id}
+                      onClick={async () => {
+                        try {
+                          await handleRoleChange(
+                            selectedUser.user_id,
+                            role.role_id,
+                            "assign"
+                          );
+                          alert("Rol asignado exitosamente");
+                        } catch (error) {
+                          alert(error.message);
+                        }
+                      }}
+                      className="w-full p-2 text-left rounded-lg hover:bg-blue-50 flex items-center gap-2 transition-colors duration-200"
+                    >
+                      <FiUserCheck className="text-blue-500" />
+                      {role.role_name}
+                    </button>
+                  ))}
+              </div>
+            </div>
+
+            </div>
+
+            {/* Botones de acción */}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowRoleModal(false)}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+              >
+                Cancelar
+              </button>
               <button
                 onClick={async () => {
                   try {
-                    await handleRoleChange(selectedUser.user_id, role.role_id, 'remove');
-                    alert('Rol eliminado exitosamente');
+                    await handleUpdateUser(selectedUser);
+                    alert("Usuario actualizado exitosamente");
+                    setShowRoleModal(false);
                   } catch (error) {
-                    alert(error.message);
+                    alert("Error al actualizar usuario: " + error.message);
                   }
                 }}
-                className="text-red-500 hover:text-red-700"
+                className="px-4 py-2 text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors duration-200"
               >
-                <FiX />
+                Guardar Cambios
               </button>
             </div>
-          ))}
-          {(!userRoles[selectedUser.user_id] || userRoles[selectedUser.user_id].length === 0) && (
-            <span className="text-sm text-gray-500">Sin roles asignados</span>
-          )}
+          </div>
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <h4 className="text-sm font-medium text-gray-700">Asignar nuevo rol:</h4>
-        {roles
-          .filter(role => 
-            !userRoles[selectedUser.user_id]?.some(
-              userRole => userRole.role_id === role.role_id
-            )
-          )
-          .map(role => (
-            <button
-              key={role.role_id}
-              onClick={async () => {
-                try {
-                  await handleRoleChange(selectedUser.user_id, role.role_id, 'assign');
-                  alert('Rol asignado exitosamente');
-                } catch (error) {
-                  alert(error.message);
-                }
-              }}
-              className="w-full p-2 text-left rounded-lg hover:bg-blue-50 flex items-center gap-2 transition-colors duration-200"
-            >
-              <FiUserCheck className="text-blue-500" />
-              {role.role_name}
-            </button>
-          ))}
-      </div>
-
-      <button
-        onClick={() => setShowRoleModal(false)}
-        className="mt-4 w-full bg-gray-100 text-gray-700 p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200"
-      >
-        Cerrar
-      </button>
-    </div>
-  </div>
-)}
+      )}
     </div>
   );
 };

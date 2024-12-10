@@ -1,33 +1,66 @@
-// ProtectedRoute.jsx
-import React, { useMemo } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import useStore from '../store/store';
+import { Navigate, Outlet } from "react-router-dom";
+import { useCallback } from 'react';
+import useStore from "../store/store";
 
-const ProtectedRoute = ({ children, adminOnly = false }) => {
-  // Usar useMemo para evitar recálculos innecesarios
-  const authState = useMemo(() => {
-    return useStore.getState();
-  }, []); // Solo se ejecuta una vez
+const ProtectedRoute = ({ children, requiredPermission }) => {
+  const store = useStore();
 
-  // Log para debug
-  console.log('Protected Route State:', {
-    isAuthenticated: authState.isAuthenticated,
-    role: authState.role,
-    adminOnly
-  });
+  const checkPermission = useCallback(() => {
+    if (!requiredPermission) return true;
 
-  // Redirigir si no está autenticado
-  if (!authState.isAuthenticated) {
+    const userRoles = store.userRoles || [];
+    if (!Array.isArray(userRoles)) return false;
+
+    return userRoles.some(role => {
+      const roleName = role?.role_name || role;
+      const permissions = {
+        'Project Manager': [
+          'canManageProjects',
+          'canAccessDashboard',
+          'canCreateProjects',
+          'canViewProjects',
+          'canManageTeam'
+        ],
+        'Developer': [
+          'canAccessDashboard',
+          'canViewProjects'
+        ],
+        'Designer': [
+          'canAccessDashboard',
+          'canViewProjects'
+        ],
+        'Team Leader': [
+          'canAccessDashboard',
+          'canViewProjects',
+          'canManageTeam'
+        ],
+        'QA Analyst': [
+          'canAccessDashboard',
+          'canViewProjects'
+        ],
+        'Administrador': [
+          'canManageUsers',
+          'canManageRoles',
+          'canManageProjects',
+          'canAccessDashboard',
+          'canCreateProjects',
+          'canViewProjects'
+        ]
+      };
+
+      return permissions[roleName]?.includes(requiredPermission);
+    });
+  }, [requiredPermission, store.userRoles]);
+
+  if (!store.isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // Redirigir si requiere ser admin y no lo es
-  if (adminOnly && authState.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
+  if (requiredPermission && !checkPermission()) {
+    return <Navigate to="/" replace />;
   }
 
-  // Renderizar children si existen, sino usar Outlet para rutas anidadas
   return children || <Outlet />;
 };
 
-export default React.memo(ProtectedRoute);
+export default ProtectedRoute;
