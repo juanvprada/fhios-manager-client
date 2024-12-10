@@ -1,19 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getTaskById } from '../services/taskServices';
+import { getTaskById, updateTask, deleteTask } from '../services/taskServices';
 import { getUsers } from '../services/usersServices';
 import useStore from '../store/store';
-import { FiArrowLeft, FiCalendar, FiUser, FiFlag } from 'react-icons/fi';
+import {
+    FiArrowLeft,
+    FiCalendar,
+    FiUser,
+    FiFlag,
+    FiEdit2,
+    FiTrash2
+} from 'react-icons/fi';
 
 const TaskDetail = () => {
     const [task, setTask] = useState(null);
     const [availableUsers, setAvailableUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedTask, setEditedTask] = useState(null);
+
     const { projectId, taskId } = useParams();
     const navigate = useNavigate();
     const isAuthenticated = useStore(state => state.isAuthenticated);
     const token = useStore(state => state.token);
+    const userRole = useStore(state => state.role);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -29,6 +40,7 @@ const TaskDetail = () => {
                     getUsers()
                 ]);
                 setTask(taskData);
+                setEditedTask(taskData);
                 setAvailableUsers(usersData);
             } catch (error) {
                 console.error("Error al cargar la tarea:", error);
@@ -40,6 +52,42 @@ const TaskDetail = () => {
 
         fetchData();
     }, [taskId, isAuthenticated, token]);
+
+    const handleEditClick = () => {
+        setEditedTask({
+            title: task.title,
+            description: task.description,
+            priority: task.priority,
+            status: task.status,
+            due_date: task.due_date,
+            assignedUsers: task.assignedUsers
+        });
+        setIsEditing(true);
+    };
+
+    const handleDeleteClick = async () => {
+        if (window.confirm('¿Estás seguro de que deseas eliminar esta tarea? Esta acción no se puede deshacer.')) {
+            try {
+                await deleteTask(taskId);
+                navigate(`/projects/${projectId}`);
+            } catch (error) {
+                console.error('Error al eliminar la tarea:', error);
+                setError('No se pudo eliminar la tarea. Por favor, intenta de nuevo.');
+            }
+        }
+    };
+
+    const handleSaveEdit = async () => {
+        try {
+            const updatedTask = await updateTask(taskId, editedTask);
+            setTask(updatedTask);
+            setIsEditing(false);
+            setError(null);
+        } catch (error) {
+            console.error('Error al actualizar la tarea:', error);
+            setError('No se pudo actualizar la tarea. Por favor, intenta de nuevo.');
+        }
+    };
 
     if (loading) {
         return (
@@ -64,16 +112,65 @@ const TaskDetail = () => {
             <div className="w-full max-w-7xl px-4 sm:px-6 md:px-8 pt-6 pb-16">
                 <div className="max-w-6xl mx-auto">
                     {/* Header */}
-                    <div className="sticky top-0 z-10 flex items-center mb-6 bg-gray-50 py-4">
-                        <button
-                            onClick={() => navigate(`/projects/${projectId}`)}
-                            className="mr-4 text-gray-600 hover:text-gray-900"
-                        >
-                            <FiArrowLeft className="w-6 h-6" />
-                        </button>
-                        <h1 className="text-2xl font-poppins font-bold text-primary-500">
-                            {task.title}
-                        </h1>
+                    <div className="sticky top-0 z-10 bg-gray-50 py-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div className="flex items-center">
+                                <button
+                                    onClick={() => navigate(`/projects/${projectId}`)}
+                                    className="mr-4 text-gray-600 hover:text-gray-900"
+                                >
+                                    <FiArrowLeft className="w-6 h-6" />
+                                </button>
+                                {!isEditing ? (
+                                    <h1 className="text-xl sm:text-2xl font-poppins font-bold text-primary-500">
+                                        {task.title}
+                                    </h1>
+                                ) : (
+                                    <input
+                                        type="text"
+                                        value={editedTask.title}
+                                        onChange={(e) => setEditedTask({ ...editedTask, title: e.target.value })}
+                                        className="text-xl sm:text-2xl font-poppins font-bold text-primary-500 bg-transparent border-b border-primary-500 focus:outline-none"
+                                    />
+                                )}
+                            </div>
+
+                            {userRole === 'admin' && !isEditing && (
+                                <div className="flex gap-2 sm:gap-4 ml-auto sm:ml-0">
+                                    <button
+                                        onClick={handleEditClick}
+                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                        title="Editar tarea"
+                                    >
+                                        <FiEdit2 className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        onClick={handleDeleteClick}
+                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                        title="Eliminar tarea"
+                                    >
+                                        <FiTrash2 className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            )}
+
+                            {isEditing && (
+                                <div className="flex gap-2 sm:gap-4 ml-auto sm:ml-0">
+                                    <button
+                                        onClick={handleSaveEdit}
+                                        className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                                    >
+                                        Guardar
+                                    </button>
+                                    <button
+                                        onClick={() => setIsEditing(false)}
+                                        className="px-4 py-2 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-colors"
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Contenido de la tarea */}
@@ -82,23 +179,48 @@ const TaskDetail = () => {
                         <div className="flex flex-wrap gap-4 mb-8">
                             <div className="w-full sm:w-auto">
                                 <div className="text-sm text-gray-500 mb-2">Estado</div>
-                                <span className={`inline-block px-4 py-2 rounded-lg text-sm font-medium
-                        ${task.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                        task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                                            task.status === 'blocked' ? 'bg-red-100 text-red-800' :
-                                                'bg-yellow-100 text-yellow-800'}`}>
-                                    {task.status}
-                                </span>
+                                {isEditing ? (
+                                    <select
+                                        value={editedTask.status}
+                                        onChange={(e) => setEditedTask({ ...editedTask, status: e.target.value })}
+                                        className="px-4 py-2 rounded-lg text-sm font-medium border"
+                                    >
+                                        <option value="pending">Pendiente</option>
+                                        <option value="in_progress">En Progreso</option>
+                                        <option value="blocked">Bloqueada</option>
+                                        <option value="completed">Completada</option>
+                                    </select>
+                                ) : (
+                                    <span className={`inline-block px-4 py-2 rounded-lg text-sm font-medium
+                                        ${task.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                            task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                                                task.status === 'blocked' ? 'bg-red-100 text-red-800' :
+                                                    'bg-yellow-100 text-yellow-800'}`}>
+                                        {task.status}
+                                    </span>
+                                )}
                             </div>
 
                             <div className="w-full sm:w-auto">
                                 <div className="text-sm text-gray-500 mb-2">Prioridad</div>
-                                <span className={`inline-block px-4 py-2 rounded-lg text-sm font-medium
-                        ${task.priority === 'high' ? 'bg-red-100 text-red-800' :
-                                        task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-green-100 text-green-800'}`}>
-                                    {task.priority}
-                                </span>
+                                {isEditing ? (
+                                    <select
+                                        value={editedTask.priority}
+                                        onChange={(e) => setEditedTask({ ...editedTask, priority: e.target.value })}
+                                        className="px-4 py-2 rounded-lg text-sm font-medium border"
+                                    >
+                                        <option value="low">Baja</option>
+                                        <option value="medium">Media</option>
+                                        <option value="high">Alta</option>
+                                    </select>
+                                ) : (
+                                    <span className={`inline-block px-4 py-2 rounded-lg text-sm font-medium
+                                        ${task.priority === 'high' ? 'bg-red-100 text-red-800' :
+                                            task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                                'bg-green-100 text-green-800'}`}>
+                                        {task.priority}
+                                    </span>
+                                )}
                             </div>
                         </div>
 
@@ -106,9 +228,17 @@ const TaskDetail = () => {
                         <div className="mb-8">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Descripción</h2>
                             <div className="bg-gray-50 rounded-lg p-6">
-                                <p className="text-gray-600 whitespace-pre-line">
-                                    {task.description || "Sin descripción"}
-                                </p>
+                                {isEditing ? (
+                                    <textarea
+                                        value={editedTask.description}
+                                        onChange={(e) => setEditedTask({ ...editedTask, description: e.target.value })}
+                                        className="w-full h-32 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    />
+                                ) : (
+                                    <p className="text-gray-600 whitespace-pre-line">
+                                        {task.description || "Sin descripción"}
+                                    </p>
+                                )}
                             </div>
                         </div>
 
@@ -121,7 +251,18 @@ const TaskDetail = () => {
                                         <FiCalendar className="w-5 h-5 mr-3 text-primary-500" />
                                         <div>
                                             <div className="text-sm text-gray-500">Fecha límite</div>
-                                            <div className="font-medium">{new Date(task.due_date).toLocaleDateString()}</div>
+                                            {isEditing ? (
+                                                <input
+                                                    type="date"
+                                                    value={editedTask.due_date}
+                                                    onChange={(e) => setEditedTask({ ...editedTask, due_date: e.target.value })}
+                                                    className="border rounded-lg p-1"
+                                                />
+                                            ) : (
+                                                <div className="font-medium">
+                                                    {new Date(task.due_date).toLocaleDateString()}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -131,22 +272,40 @@ const TaskDetail = () => {
                             <div className="bg-gray-50 rounded-lg p-6">
                                 <h3 className="text-sm font-medium text-gray-500 mb-4">Usuarios asignados</h3>
                                 <div className="flex flex-wrap gap-2">
-                                    {task.assignedUsers?.map(userId => {
-                                        const user = availableUsers.find(u => u.user_id.toString() === userId);
-                                        return (
-                                            <div
-                                                key={userId}
-                                                className="flex items-center bg-white px-4 py-2 rounded-lg shadow-sm"
-                                            >
-                                                <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center mr-2">
-                                                    <FiUser className="w-4 h-4 text-primary-600" />
+                                    {isEditing ? (
+                                        <select
+                                            multiple
+                                            value={editedTask.assignedUsers}
+                                            onChange={(e) => setEditedTask({
+                                                ...editedTask,
+                                                assignedUsers: Array.from(e.target.selectedOptions, option => option.value)
+                                            })}
+                                            className="w-full p-2 border rounded-lg"
+                                        >
+                                            {availableUsers.map(user => (
+                                                <option key={user.user_id} value={user.user_id.toString()}>
+                                                    {user.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        task.assignedUsers?.map(userId => {
+                                            const user = availableUsers.find(u => u.user_id.toString() === userId);
+                                            return (
+                                                <div
+                                                    key={userId}
+                                                    className="flex items-center bg-white px-4 py-2 rounded-lg shadow-sm"
+                                                >
+                                                    <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center mr-2">
+                                                        <FiUser className="w-4 h-4 text-primary-600" />
+                                                    </div>
+                                                    <span className="text-sm font-medium text-gray-700">
+                                                        {user ? user.name : "Usuario desconocido"}
+                                                    </span>
                                                 </div>
-                                                <span className="text-sm font-medium text-gray-700">
-                                                    {user ? user.name : "Usuario desconocido"}
-                                                </span>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -159,7 +318,6 @@ const TaskDetail = () => {
                             >
                                 Volver al proyecto
                             </button>
-
                         </div>
                     </div>
                 </div>
