@@ -14,25 +14,65 @@ const getAuthHeader = () => {
 };
 
 export const createProject = async (projectData) => {
-  const response = await axios.post(API_URL, projectData, getAuthHeader());
-  return response.data;
-};
+  try {
+    // Log para ver qué datos estamos enviando
+    console.log('Datos enviados al crear proyecto:', projectData);
 
+    const dataToSend = {
+      ...projectData,
+      selectedUsers: projectData.selectedUsers,
+    };
+
+    console.log('Datos formateados para enviar:', dataToSend);
+    const response = await axios.post(API_URL, dataToSend, getAuthHeader());
+    console.log('Respuesta del backend al crear:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error en createProject:', error);
+    throw error;
+  }
+};
 export const getProjects = async () => {
   const response = await axios.get(API_URL, getAuthHeader());
-  return response.data;
+  
+  // Limpiar la descripción de cada proyecto
+  const cleanedProjects = response.data.map(project => {
+    const description = project.description || '';
+    return {
+      ...project,
+      description: description.replace(/<!--ASSIGNED_USERS:.*?-->/, '').trim(),
+      assignedUsers: description.match(/<!--ASSIGNED_USERS:(.*?)-->/)?.slice(1) || []
+    };
+  });
+
+  return cleanedProjects;
 };
 
 export const getProjectById = async (projectId) => {
-  const response = await axios.get(`${API_URL}/${projectId}`, getAuthHeader());
-  return response.data;
+  try {
+    console.log('Obteniendo proyecto con ID:', projectId);
+    const response = await axios.get(`${API_URL}/${projectId}`, getAuthHeader());
+    console.log('Datos crudos del proyecto recibido:', response.data);
+
+    // Asegurarnos de que assignedUsers exista
+    const projectData = {
+      ...response.data,
+      assignedUsers: response.data.selectedUsers || response.data.assignedUsers || []
+    };
+
+    console.log('Datos del proyecto procesados:', projectData);
+    return projectData;
+  } catch (error) {
+    console.error('Error en getProjectById:', error);
+    throw error;
+  }
 };
 
 export const updateProject = async (projectId, updatedData) => {
+  console.log('Datos enviados al actualizar proyecto:', updatedData);
   const response = await axios.put(`${API_URL}/${projectId}`, updatedData, getAuthHeader());
   return response.data;
 };
-
 export const deleteProject = async (projectId) => {
   await axios.delete(`${API_URL}/${projectId}`, getAuthHeader());
 };

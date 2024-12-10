@@ -60,9 +60,10 @@ const NewProject = () => {
         start_date: duration.start,
         end_date: duration.end,
         status: 'planning',
-        selectedUsers: selectedUsers
+        selectedUsers: selectedUsers.map(id => id.toString())
       };
-
+      console.log("Enviando usuarios:", selectedUsers);
+      console.log("Enviando projectData:", projectData);
       await createProject(projectData);
       navigate("/projects");
     } catch (err) {

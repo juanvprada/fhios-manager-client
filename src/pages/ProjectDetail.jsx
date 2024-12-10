@@ -12,7 +12,8 @@ import {
   FiFlag,
   FiPlus,
   FiEdit2,
-  FiTrash2
+  FiTrash2,
+  FiUser
 } from 'react-icons/fi';
 import TaskForm from '../components/TaskForm';
 
@@ -26,6 +27,7 @@ const ProjectDetail = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedProject, setEditedProject] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [assignedUsers, setAssignedUsers] = useState([]);
 
   const { projectId } = useParams();
   const navigate = useNavigate();
@@ -64,9 +66,15 @@ const ProjectDetail = () => {
         getProjectTasks(projectId),
         getUsers()
       ]);
-
+      console.log('Datos del proyecto recibidos:', projectData);
+      console.log('Datos del proyecto:', projectData);
+      console.log('Usuarios disponibles:', usersData);
       setProject(projectData);
-      setEditedProject(projectData);
+      setEditedProject({
+        ...projectData,
+        assignedUsers: projectData.assignedUsers || []
+      });
+      setAssignedUsers(projectData.assignedUsers || []);
       setTasks(tasksData);
       setAvailableUsers(usersData);
       setError(null);
@@ -140,8 +148,12 @@ const ProjectDetail = () => {
 
   const handleSaveEdit = async () => {
     try {
+      console.log('Guardando proyecto con datos:', editedProject);
       const updatedProject = await updateProject(projectId, editedProject);
-      setProject(updatedProject);
+      setProject({
+        ...updatedProject,
+        assignedUsers: updatedProject.assignedUsers || []
+      });
       setIsEditing(false);
       setError(null);
     } catch (error) {
@@ -334,41 +346,63 @@ const ProjectDetail = () => {
                   </div>
                   {/* Usuarios asignados */}
                   <div className="bg-gray-50 rounded-lg p-6">
-                    <h3 className="text-sm font-medium text-gray-500 mb-4">Usuarios asignados</h3>
-                    <div className="flex flex-wrap gap-2">
+                    <h3 className="text-sm font-medium text-gray-500 mb-4">
+                      Miembros del equipo
+                    </h3>
+                    <div className="space-y-4">
                       {isEditing ? (
-                        <select
-                          multiple
-                          value={editedProject.assignedUsers}
-                          onChange={(e) => setEditedProject({
-                            ...editedTask,
-                            assignedUsers: Array.from(e.target.selectedOptions, option => option.value)
-                          })}
-                          className="w-full p-2 border rounded-lg"
-                        >
-                          {availableUsers.map(user => (
-                            <option key={user.user_id} value={user.user_id.toString()}>
-                              {user.name}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        project.assignedUsers?.map(userId => {
-                          const user = availableUsers.find(u => u.user_id.toString() === userId);
-                          return (
+                        <div className="border border-gray-300 rounded-lg w-full p-3 max-h-[300px] overflow-y-auto">
+                          {availableUsers.map((user) => (
                             <div
-                              key={userId}
-                              className="flex items-center bg-white px-4 py-2 rounded-lg shadow-sm"
+                              key={user.user_id}
+                              className="flex items-center p-2 hover:bg-gray-50"
                             >
-                              <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center mr-2">
-                                <FiUser className="w-4 h-4 text-primary-600" />
-                              </div>
-                              <span className="text-sm font-medium text-gray-700">
-                                {user ? user.name : "Usuario desconocido"}
-                              </span>
+                              <input
+                                type="checkbox"
+                                id={`user-${user.user_id}`}
+                                value={user.user_id.toString()}
+                                checked={editedProject.assignedUsers?.includes(user.user_id.toString())}
+                                onChange={(e) => {
+                                  const userId = e.target.value;
+                                  setEditedProject(prev => ({
+                                    ...prev,
+                                    assignedUsers: e.target.checked
+                                      ? [...(prev.assignedUsers || []), userId]
+                                      : (prev.assignedUsers || []).filter(id => id !== userId)
+                                  }));
+                                }}
+                                className="mr-3"
+                              />
+                              <label htmlFor={`user-${user.user_id}`}>
+                                {user.name}
+                              </label>
                             </div>
-                          );
-                        })
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {project.assignedUsers?.map((userId) => {
+                            const user = availableUsers.find(
+                              (u) => u.user_id.toString() === userId
+                            );
+                            return user ? (
+                              <div
+                                key={userId}
+                                className="flex items-center bg-white px-4 py-2 rounded-lg shadow-sm"
+                              >
+                                <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center mr-2">
+                                  <FiUser className="w-4 h-4 text-primary-600" />
+                                </div>
+                                <span className="text-sm font-medium text-gray-700">
+                                  {user.name}
+                                </span>
+                              </div>
+                            ) : null;
+                          })}
+                          {(!project.assignedUsers || project.assignedUsers.length === 0) && (
+                            <p className="text-gray-500">No hay miembros asignados al proyecto</p>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
