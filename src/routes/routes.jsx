@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";  // Added Navigate import
 import Layout from "../layout/Layout";
 import Projects from "../pages/Projects";
 import UserManagement from "../pages/UserManagement";
@@ -9,11 +9,11 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import Dashboard from "../pages/Dashboard";
 import ProjectDetail from '../pages/ProjectDetail';
 import TaskDetail from '../pages/TaskDetail';
+import useStore from '../store/store'; // Added useStore import
 
+// Create the router with routes
 export const router = createBrowserRouter([
   {
-    
-
     path: "/",
     element: <Layout />,
     children: [
@@ -65,13 +65,19 @@ export const router = createBrowserRouter([
           },
         ],
       },
+      // Added the LogoutRoute
+      {
+        path: "logout",
+        element: <LogoutRoute />,
+      },
     ],
-
   },
 ]);
 
+// LogoutRoute component
 function LogoutRoute() {
-  const logout = useStore(state => state.logout);
-  logout();
-  return <Navigate to="/login" replace />;
+  const logout = useStore(state => state.logout);  // Accessing the logout function from store
+  logout();  // Perform logout
+  return <Navigate to="/login" replace />;  // Redirect to login page after logout
 }
+
