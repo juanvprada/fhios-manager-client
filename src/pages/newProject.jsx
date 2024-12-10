@@ -74,8 +74,8 @@ const NewProject = () => {
   };
 
   return (
-    <div className="flex justify-center items-start min-h-screen bg-gray-50">
-      <div className="max-w-xl w-full p-6 sm:p-8">
+    <div className="flex justify-center items-start min-h-screen bg-gray-50 overflow-x-hidden">
+  <div className="max-w-xl w-full p-6 sm:p-8 box-border">
         <h1 className="text-2xl text-center font-poppins font-bold text-primary-500 mb-4">
           Crear Nuevo Proyecto
         </h1>
