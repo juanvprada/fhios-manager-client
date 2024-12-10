@@ -127,7 +127,8 @@ const ProjectDetail = () => {
       description: project.description,
       methodology: project.methodology,
       start_date: project.start_date,
-      end_date: project.end_date
+      end_date: project.end_date,
+      assignedUsers: project.assignedUsers || []
     });
     setIsEditing(true);
   };
