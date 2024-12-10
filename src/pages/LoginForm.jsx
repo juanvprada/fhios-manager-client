@@ -16,46 +16,28 @@ const LoginForm = () => {
     e.preventDefault();
   
     try {
-      // Primer paso: Login
-      const loginResponse = await axios.post("http://localhost:5000/api/auth/login", {
-        email,
-        password
+      const loginResponse = await axios.post('http://localhost:3000/api/auth/login', { 
+        email, 
+        password 
       });
   
       if (loginResponse.data.token) {
-        const token = loginResponse.data.token;
+        const { token, role } = loginResponse.data; // Extraemos también el role
+        
+        // Configurar axios con el token
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         try {
-          // Configurar headers para las siguientes peticiones
-          const config = {
-            headers: { Authorization: `Bearer ${token}` }
-          };
+          const userResponse = await axios.get('http://localhost:3000/api/auth/profile');
+          console.log('Profile Response:', userResponse.data);
   
-          // Segundo paso: Obtener perfil
-          const profileResponse = await axios.get(
-            "http://localhost:5000/api/auth/profile",
-            config
-          );
-          
-          console.log("Profile Response:", profileResponse.data);
-  
-          // Tercer paso: Obtener roles DESPUÉS de tener el perfil
-          const userRolesResponse = await axios.get(
-            `http://localhost:5000/api/roles/user/${profileResponse.data.data.id}`,
-            config
-          );
-  
-          const userData = profileResponse.data.data;
-          const userRoles = userRolesResponse.data.data || [];
-  
-          // Almacenar en el store
-          login({
-            user: userData,
-            token,
-            roles: userRoles.length > 0 ? userRoles : [{ role_name: 'USER' }]
-          });
-  
-          navigate("/dashboard");
+          if (userResponse.data.data) {
+            // Pasar también el role al login
+            login(userResponse.data.data, token, role);
+            navigate('/dashboard');
+          } else {
+            setError('Error al obtener datos del usuario');
+          }
         } catch (profileError) {
           console.error("Error al obtener perfil:", profileError);
           setError("Error al obtener información del usuario");

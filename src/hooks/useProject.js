@@ -1,19 +1,41 @@
 import { useState, useEffect } from 'react';
-import { createProject } from '../services/projectServices';
-import useUserStore from '../store/userStore';
-import useAuthStore from '../store/authStore';
+import { getProjects, createProject, assignUserToProject } from '../services/projectServices';
+import useStore from '../store/store';
 
-export const useProject = () => {
-  const { token } = useAuthStore();
-  const { users, loading: loadingUsers, error, fetchUsers } = useUserStore();
-  const [loading, setLoading] = useState(false);
+const useProjects = () => {
+  const [projects, setProjects] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [createError, setCreateError] = useState(null);
 
+  const isAuthenticated = useStore(state => state.isAuthenticated);
+  const token = useStore(state => state.token);
+
   useEffect(() => {
-    if (token) {
-      fetchUsers();
-    }
-  }, [token, fetchUsers]);
+    const fetchProjects = async () => {
+      if (!isAuthenticated || !token) {
+        setError("No estás autenticado");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const data = await getProjects();
+        setProjects(data);
+        setError(null);
+      } catch (err) {
+        console.error("Error al cargar proyectos:", err);
+        setError(err.response?.data?.message || "Error al cargar los proyectos");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, [isAuthenticated, token]);
 
   const handleCreateProject = async (projectData) => {
     setLoading(true);
@@ -30,13 +52,14 @@ export const useProject = () => {
 
       const newProject = await createProject(formattedData);
 
-      if (projectData.selectedUsers.length > 0) {
+      if (projectData.selectedUsers?.length > 0) {
         const projectMemberPromises = projectData.selectedUsers.map(userId =>
           assignUserToProject(newProject.project_id, userId)
         );
         await Promise.all(projectMemberPromises);
       }
 
+      setProjects(prev => [...prev, newProject]);
       return newProject;
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || 'Error al crear el proyecto';
@@ -47,11 +70,29 @@ export const useProject = () => {
     }
   };
 
+  // Filtrar y ordenar proyectos
+  const filteredProjects = projects
+    .filter((project) =>
+      project.project_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (project.description || '').toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      const dateA = new Date(a.created_at || 0);
+      const dateB = new Date(b.created_at || 0);
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+
   return {
-    users,
+    projects,
+    filteredProjects,
     loading,
-    loadingUsers,
     error: error || createError,
+    searchTerm,
+    setSearchTerm,
+    sortOrder,
+    setSortOrder,
     handleCreateProject
   };
 };
+
+export default useProjects;

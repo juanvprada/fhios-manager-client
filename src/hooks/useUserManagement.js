@@ -14,8 +14,8 @@ const useUserManagement = () => {
   const [error, setError] = useState(null);
   const [roles, setRoles] = useState([]);
 
-  const isAuthenticated = useStore(state => state.isAuthenticated);
   const token = useStore(state => state.token);
+  const API_URL = 'http://localhost:3000/api';
 
   const getHeaders = () => ({
     headers: {
@@ -29,7 +29,6 @@ const useUserManagement = () => {
     const fetchData = async () => {
       if (!isAuthenticated || !token) {
         setError("No estás autenticado");
-        setLoading(false);
         return;
       }
 
@@ -75,8 +74,7 @@ const useUserManagement = () => {
   }, [isAuthenticated, token]);
 
 
-  // Filtrar y ordenar usuarios
-  const filteredUsers = users.filter((user) =>
+  const filteredUsers = users?.filter((user) =>
     (user.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   ).sort((a, b) => {
@@ -131,10 +129,11 @@ const useUserManagement = () => {
   // Manejar eliminación de usuarios
   const handleDeleteUser = async (userId) => {
     try {
-      await deleteUser(userId);
-      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+      await axios.delete(`${API_URL}/users/${userId}`, getHeaders());
+      await fetchData();
     } catch (error) {
       console.error('Error al eliminar usuario:', error);
+      throw new Error(error.response?.data?.message || 'Error al eliminar el usuario');
     }
   };
 

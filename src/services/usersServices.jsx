@@ -1,7 +1,7 @@
 import axios from 'axios';
 import useStore from '../store/store';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'http://localhost:3000/api';
 
 // Función para obtener los headers con el token
 const getHeaders = () => {
@@ -17,17 +17,29 @@ const getHeaders = () => {
 // Obtener usuarios
 export const getUsers = async () => {
   try {
-    const usersResponse = await axios.get(`${API_URL}/api/users`, getHeaders());
+    const [usersResponse, rolesResponse] = await Promise.all([
+      axios.get(`${API_URL}/users`, getAuthHeader()),
+      axios.get(`${API_URL}/user_roles`, getAuthHeader())
+    ]);
     
-    const formattedUsers = usersResponse.data.map(user => ({
-      id: user.user_id,
-      user_id: user.user_id,
-      name: `${user.first_name} ${user.last_name}`,
-      email: user.email,
-      created_at: user.created_at,
-      status: user.status
-    }));
+    // Formatear los datos combinando usuarios y roles
+    const formattedUsers = usersResponse.data.map(user => {
+      const userRole = rolesResponse.data.find(
+        role => role.user_id === user.user_id
+      );
 
+      return {
+        id: user.user_id,
+        user_id: user.user_id,
+        name: `${user.first_name} ${user.last_name}`,
+        email: user.email,
+        role: userRole?.role_name || 'Sin rol',
+        created_at: user.created_at,
+        status: user.status
+      };
+    });
+
+    console.log('Formatted Users with Roles:', formattedUsers);
     return formattedUsers;
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -35,7 +47,6 @@ export const getUsers = async () => {
   }
 };
 
-// Obtener roles
 export const getAllUserRoles = async () => {
   try {
     const response = await axios.get(`${API_URL}/api/user_roles`, getHeaders());
@@ -46,44 +57,36 @@ export const getAllUserRoles = async () => {
   }
 };
 
-// Asignar rol
-export const assignUserRole = async (userId, roleId) => {
+export const updateUserRole = async (userId, roleName) => {
   try {
-    const response = await axios.post(`${API_URL}/api/user_roles`, {
-      user_id: parseInt(userId),
-      role_id: parseInt(roleId)
-    }, getHeaders());
-    return response.data;
+    // Primero obtener el role_id basado en el nombre del rol
+    const rolesResponse = await axios.get(`${API_URL}/roles`, getAuthHeader());
+    const role = rolesResponse.data.find(r => r.role_name === roleName);
+    
+    if (!role) {
+      throw new Error(`Role ${roleName} not found`);
+    }
+
+    const response = await axios.post(`${API_URL}/user_roles`, {
+      user_id: userId,
+      role_id: role.role_id
+    }, getAuthHeader());
+
+    return {
+      ...response.data,
+      role: roleName
+    };
   } catch (error) {
-    console.error('Error asignando rol:', error);
+    console.error('Error in updateUserRole service:', error);
     throw error;
   }
 };
 
-// Eliminar rol
-export const removeUserRole = async (userId, roleId) => {
+export const deleteUser = async (userId) => {
   try {
-    const response = await axios.delete(
-      `${API_URL}/api/user_roles/${userId}/${roleId}`, 
-      getHeaders()
-    );
-    return response.data;
+    await axios.delete(`${API_URL}/users/${userId}`, getAuthHeader());
   } catch (error) {
-    console.error('Error eliminando rol:', error);
-    throw error;
-  }
-};
-
-// Obtener roles de un usuario específico
-export const getUserRoles = async (userId) => {
-  try {
-    const response = await axios.get(
-      `${API_URL}/api/roles/user/${userId}`,
-      getHeaders()
-    );
-    return response.data;
-  } catch (error) {
-    console.error('Error obteniendo roles del usuario:', error);
+    console.error('Error deleting user:', error);
     throw error;
   }
 };

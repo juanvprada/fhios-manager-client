@@ -1,38 +1,23 @@
-// services/rolesServices.js
 import axios from 'axios';
 import useStore from '../store/store';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:3000';
 
-export const createRole = async (roleData) => {
+const getHeaders = () => {
   const token = useStore.getState().token;
-  
-  try {
-    const response = await axios.post(`${API_URL}/roles`, roleData, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error en createRole:', error.response?.data || error);
-    throw error;
-  }
+  return {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  };
 };
 
-export const getRoles = async () => {
-  const token = useStore.getState().token;
-  
+export const createRole = async (roleData) => {
   try {
-    const response = await axios.get(`${API_URL}/roles`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
+    const response = await axios.post(`${API_URL}/api/roles`, roleData, getHeaders());
     return response.data;
   } catch (error) {
-    console.error('Error en getRoles:', error.response?.data || error);
     throw error;
   }
 };
