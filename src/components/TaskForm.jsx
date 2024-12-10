@@ -8,6 +8,7 @@ const TaskForm = ({ onSubmit, onClose, availableUsers }) => {
     due_date: '',
     priority: 'medium',
     assigned_to: '',
+    estimated_hours: 0,
   });
 
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -66,6 +67,7 @@ const TaskForm = ({ onSubmit, onClose, availableUsers }) => {
               />
             </div>
             <div>
+
               <label className="block text-sm font-medium text-gray-700 sm:text-base">
                 Prioridad
               </label>
@@ -78,6 +80,20 @@ const TaskForm = ({ onSubmit, onClose, availableUsers }) => {
                 <option value="medium">Media</option>
                 <option value="high">Alta</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 sm:text-base">
+                Horas estimadas
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={taskData.estimated_hours}
+                onChange={(e) =>
+                  setTaskData({ ...taskData, estimated_hours: parseInt(e.target.value) })
+                }
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm"
+              />
             </div>
           </div>
 

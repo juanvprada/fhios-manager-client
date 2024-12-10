@@ -10,7 +10,8 @@ import {
     FiUser,
     FiFlag,
     FiEdit2,
-    FiTrash2
+    FiTrash2,
+    FiClock
 } from 'react-icons/fi';
 
 const TaskDetail = () => {
@@ -42,7 +43,10 @@ const TaskDetail = () => {
                     getUsers()
                 ]);
                 setTask(taskData);
-                setEditedTask(taskData);
+                setEditedTask({
+                    ...taskData,
+                    estimated_hours: taskData.estimated_hours
+                });
                 setAvailableUsers(usersData);
             } catch (error) {
                 console.error("Error al cargar la tarea:", error);
@@ -56,14 +60,6 @@ const TaskDetail = () => {
     }, [taskId, isAuthenticated, token]);
 
     const handleEditClick = () => {
-        setEditedTask({
-            title: task.title,
-            description: task.description,
-            priority: task.priority,
-            status: task.status,
-            due_date: task.due_date,
-            assignedUsers: task.assignedUsers
-        });
         setIsEditing(true);
     };
 
@@ -195,11 +191,17 @@ const TaskDetail = () => {
                                         <option value="completed">Completada</option>
                                     </select>
                                 ) : (
-                                    <span className={`inline-block px-4 py-2 rounded-lg text-sm font-medium
-                                        ${task.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                            task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                                                task.status === 'blocked' ? 'bg-red-100 text-red-800' :
-                                                    'bg-yellow-100 text-yellow-800'}`}>
+                                    <span
+                                        className={`inline-block px-4 py-2 rounded-lg text-sm font-medium
+                          ${task.status === 'completed'
+                                                ? 'bg-green-100 text-green-800'
+                                                : task.status === 'in_progress'
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : task.status === 'blocked'
+                                                        ? 'bg-red-100 text-red-800'
+                                                        : 'bg-yellow-100 text-yellow-800'
+                                            }`}
+                                    >
                                         {task.status}
                                     </span>
                                 )}
@@ -218,10 +220,15 @@ const TaskDetail = () => {
                                         <option value="high">Alta</option>
                                     </select>
                                 ) : (
-                                    <span className={`inline-block px-4 py-2 rounded-lg text-sm font-medium
-                                        ${task.priority === 'high' ? 'bg-red-100 text-red-800' :
-                                            task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                                                'bg-green-100 text-green-800'}`}>
+                                    <span
+                                        className={`inline-block px-4 py-2 rounded-lg text-sm font-medium
+                          ${task.priority === 'high'
+                                                ? 'bg-red-100 text-red-800'
+                                                : task.priority === 'medium'
+                                                    ? 'bg-yellow-100 text-yellow-800'
+                                                    : 'bg-green-100 text-green-800'
+                                            }`}
+                                    >
                                         {task.priority}
                                     </span>
                                 )}
@@ -235,12 +242,14 @@ const TaskDetail = () => {
                                 {isEditing ? (
                                     <textarea
                                         value={editedTask.description}
-                                        onChange={(e) => setEditedTask({ ...editedTask, description: e.target.value })}
+                                        onChange={(e) =>
+                                            setEditedTask({ ...editedTask, description: e.target.value })
+                                        }
                                         className="w-full h-32 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                                     />
                                 ) : (
                                     <p className="text-gray-600 whitespace-pre-line">
-                                        {task.description || "Sin descripción"}
+                                        {task.description || 'Sin descripción'}
                                     </p>
                                 )}
                             </div>
@@ -249,8 +258,9 @@ const TaskDetail = () => {
                         {/* Fechas e Información */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                             <div className="bg-gray-50 rounded-lg p-6">
-                                <h3 className="text-sm font-medium text-gray-500 mb-4">Fechas</h3>
+                                <h3 className="text-sm font-medium text-gray-500 mb-4">Información</h3>
                                 <div className="space-y-4">
+                                    {/* Fecha límite */}
                                     <div className="flex items-center text-gray-600">
                                         <FiCalendar className="w-5 h-5 mr-3 text-primary-500" />
                                         <div>
@@ -259,7 +269,9 @@ const TaskDetail = () => {
                                                 <input
                                                     type="date"
                                                     value={editedTask.due_date}
-                                                    onChange={(e) => setEditedTask({ ...editedTask, due_date: e.target.value })}
+                                                    onChange={(e) =>
+                                                        setEditedTask({ ...editedTask, due_date: e.target.value })
+                                                    }
                                                     className="border rounded-lg p-1"
                                                 />
                                             ) : (
@@ -269,32 +281,61 @@ const TaskDetail = () => {
                                             )}
                                         </div>
                                     </div>
+                                    {/* Horas estimadas */}
+                                    <div className="flex items-center text-gray-600">
+                                        <FiClock className="w-5 h-5 mr-3 text-primary-500" />
+                                        <div>
+                                            <div className="text-sm text-gray-500">Horas estimadas</div>
+                                            {isEditing ? (
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={editedTask.estimated_hours}
+                                                    onChange={(e) =>
+                                                        setEditedTask({ ...editedTask, estimated_hours: parseInt(e.target.value) })
+                                                    }
+                                                    className="border rounded-lg p-1"
+                                                />
+                                            ) : (
+                                                <div className="font-medium">{task.estimated_hours} horas</div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             {/* Usuarios asignados */}
                             <div className="bg-gray-50 rounded-lg p-6">
-                                <h3 className="text-sm font-medium text-gray-500 mb-4">Usuarios asignados</h3>
+                                <h3 className="text-sm font-medium text-gray-500 mb-4">
+                                    Usuarios asignados
+                                </h3>
                                 <div className="flex flex-wrap gap-2">
                                     {isEditing ? (
                                         <select
                                             multiple
                                             value={editedTask.assignedUsers}
-                                            onChange={(e) => setEditedTask({
-                                                ...editedTask,
-                                                assignedUsers: Array.from(e.target.selectedOptions, option => option.value)
-                                            })}
+                                            onChange={(e) =>
+                                                setEditedTask({
+                                                    ...editedTask,
+                                                    assignedUsers: Array.from(
+                                                        e.target.selectedOptions,
+                                                        (option) => option.value
+                                                    ),
+                                                })
+                                            }
                                             className="w-full p-2 border rounded-lg"
                                         >
-                                            {availableUsers.map(user => (
+                                            {availableUsers.map((user) => (
                                                 <option key={user.user_id} value={user.user_id.toString()}>
                                                     {user.name}
                                                 </option>
                                             ))}
                                         </select>
                                     ) : (
-                                        task.assignedUsers?.map(userId => {
-                                            const user = availableUsers.find(u => u.user_id.toString() === userId);
+                                        task.assignedUsers?.map((userId) => {
+                                            const user = availableUsers.find(
+                                                (u) => u.user_id.toString() === userId
+                                            );
                                             return (
                                                 <div
                                                     key={userId}
@@ -304,7 +345,7 @@ const TaskDetail = () => {
                                                         <FiUser className="w-4 h-4 text-primary-600" />
                                                     </div>
                                                     <span className="text-sm font-medium text-gray-700">
-                                                        {user ? user.name : "Usuario desconocido"}
+                                                        {user ? user.name : 'Usuario desconocido'}
                                                     </span>
                                                 </div>
                                             );
