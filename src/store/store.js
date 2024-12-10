@@ -1,37 +1,44 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const initialState = {
+  user: null,
+  token: null,
+  isAuthenticated: false,
+  userRoles: []
+};
+
 const useStore = create(
   persist(
     (set) => ({
-      user: null,
-      token: null,
-      isAuthenticated: false,
-      role: null, // Añadimos el rol al estado
+      ...initialState,
 
-      login: (userData, token, role = 'admin') => set({ 
-        user: userData, 
-        token: token, 
-        isAuthenticated: true,
-        role: role 
-      }),
+      login: ({ user, token, roles }) => {
+        const formattedRoles = (roles || []).map(role => ({
+          role_name: role.role_name || role,
+          role_id: role.role_id || null
+        }));
 
-      logout: () => set({ 
-        user: null, 
-        token: null, 
-        isAuthenticated: false,
-        role: null 
-      }),
+        set({
+          user,
+          token,
+          isAuthenticated: true,
+          userRoles: formattedRoles
+        });
+      },
 
-      updateUser: (userData) => set(state => ({ 
-        user: { ...state.user, ...userData } 
-      })),
-
-      setRole: (role) => set({ role })
+      logout: () => {
+        set(initialState);
+      }
     }),
     {
       name: 'auth-storage',
-      getStorage: () => localStorage
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        isAuthenticated: state.isAuthenticated,
+        userRoles: state.userRoles
+      })
     }
   )
 );

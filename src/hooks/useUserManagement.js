@@ -138,6 +138,48 @@ const useUserManagement = () => {
     }
   };
 
+  const handleUpdateUser = async (userData) => {
+    try {
+      // Preparar los datos para la actualización
+      const updateData = {
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        email: userData.email,
+        status: userData.status
+      };
+  
+      // Si hay una nueva contraseña, la incluimos
+      if (userData.password) {
+        updateData.password = userData.password;
+      }
+  
+      const response = await axios.put(
+        `http://localhost:5000/api/users/${userData.user_id}`,
+        updateData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+  
+      // Actualizar la lista de usuarios
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.user_id === userData.user_id 
+            ? { ...user, ...response.data.data }
+            : user
+        )
+      );
+  
+      return response.data;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      throw new Error(error.response?.data?.message || 'Error al actualizar usuario');
+    }
+  };
+  
+  // Agregar handleUpdateUser al return del hook
   return {
     searchTerm,
     setSearchTerm,
@@ -150,11 +192,11 @@ const useUserManagement = () => {
     filteredUsers,
     handleRoleChange,
     handleDeleteUser,
+    handleUpdateUser, // Agregar esta línea
     loading,
     error,
     roles,
-    userRoles,
-    users
+    userRoles
   };
 };
 
