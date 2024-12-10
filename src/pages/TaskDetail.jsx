@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTaskById, updateTask, deleteTask } from '../services/taskServices';
 import { getUsers } from '../services/usersServices';
+import { createDocument, getDocumentsByTaskId } from '../services/documentServices';
 import useStore from '../store/store';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
+import DocumentUploadModal from '../components/DocumentUploadModal';
 import {
     FiArrowLeft,
     FiCalendar,
@@ -11,17 +13,20 @@ import {
     FiFlag,
     FiEdit2,
     FiTrash2,
-    FiClock
+    FiClock,
+    FiPlus
 } from 'react-icons/fi';
 
 const TaskDetail = () => {
     const [task, setTask] = useState(null);
     const [availableUsers, setAvailableUsers] = useState([]);
+    const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editedTask, setEditedTask] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showDocumentUploadModal, setShowDocumentUploadModal] = useState(false);
 
     const { projectId, taskId } = useParams();
     const navigate = useNavigate();
@@ -38,10 +43,23 @@ const TaskDetail = () => {
             }
 
             try {
+                setLoading(true);
                 const [taskData, usersData] = await Promise.all([
                     getTaskById(taskId),
                     getUsers()
                 ]);
+                console.log('Task data:', taskData);
+                console.log('Users data:', usersData);
+
+                const documentList = await getDocumentsByTaskId(taskId);
+                console.log('Documents:', documentList);
+                if (Array.isArray(documentList)) {
+                    setDocuments(documentList);
+                } else {
+                    console.error('La respuesta de getDocumentsByTaskId no es un arreglo:', documentList);
+                    setDocuments([]);
+                }
+
                 setTask(taskData);
                 setEditedTask({
                     ...taskData,
@@ -49,6 +67,7 @@ const TaskDetail = () => {
                     estimated_hours: taskData.estimated_hours
                 });
                 setAvailableUsers(usersData);
+                setError(null);
             } catch (error) {
                 console.error("Error al cargar la tarea:", error);
                 setError(error.response?.data?.message || "Error al cargar los datos de la tarea");
@@ -87,6 +106,17 @@ const TaskDetail = () => {
         } catch (error) {
             console.error('Error al actualizar la tarea:', error);
             setError('No se pudo actualizar la tarea. Por favor, intenta de nuevo.');
+        }
+    };
+
+    const handleDocumentUpload = async (documentData) => {
+        try {
+            const newDocument = await createDocument(documentData);
+            setDocuments([...documents, { ...newDocument, description: documentData.get('description') }]);
+            setShowDocumentUploadModal(false);
+        } catch (error) {
+            console.error('Error al subir el documento:', error);
+            setError('Error al subir el documento');
         }
     };
     const renderAssignedUsers = () => (
@@ -401,6 +431,52 @@ const TaskDetail = () => {
                             {/* Usuarios asignados */}
                             {renderAssignedUsers()}
                         </div>
+                        <div className="mt-8">
+                            <button
+                                onClick={() => setShowDocumentUploadModal(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                            >
+                                <FiPlus className="w-4 h-4" />
+                                Subir Documento
+                            </button>
+
+                            <div className="mt-4 bg-gray-50 rounded-xl">
+                                {documents.length === 0 ? (
+                                    <div className="p-8 text-center">
+                                        <p className="text-gray-500">No hay documentos subidos aún.</p>
+                                    </div>
+                                ) : (
+                                    <div className="divide-y divide-gray-200">
+                                        {documents.map((document) => (
+                                            <div
+                                                key={document.document_id}
+                                                className="p-4 sm:p-6 hover:bg-white transition-colors duration-200 cursor-pointer"
+                                                onClick={() => window.open(document.file_path, '_blank')}
+                                            >
+                                                <div className="flex justify-between items-center">
+                                                    <h3 className="text-lg font-medium text-gray-900">
+                                                        {document.title}
+                                                    </h3>
+                                                    <span className="text-sm text-gray-500">
+                                                        {document.file_type || 'Archivo'}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-gray-600 mt-2">
+                                                    Subido por: {document.uploaded_by || 'Desconocido'}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {showDocumentUploadModal && (
+                            <DocumentUploadModal
+                                onSubmit={handleDocumentUpload}
+                                onClose={() => setShowDocumentUploadModal(false)}
+                            />
+                        )}
 
                         <DeleteConfirmationModal
                             isOpen={showDeleteModal}
