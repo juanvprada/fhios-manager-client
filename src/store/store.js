@@ -11,34 +11,42 @@ const initialState = {
 const useStore = create(
   persist(
     (set) => ({
-      ...initialState,
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      role: null, // Añadimos el rol al estado
 
-      login: ({ user, token, roles }) => {
-        const formattedRoles = (roles || []).map(role => ({
-          role_name: role.role_name || role,
-          role_id: role.role_id || null
-        }));
+      login: (userData, token, role = 'admin') => {
+        const user = {
+          ...userData,
+          user_id: userData.user_id || userData.id, // Aseguramos que `user_id` esté presente
+        };
 
         set({
           user,
           token,
           isAuthenticated: true,
-          userRoles: formattedRoles
+          role,
         });
       },
 
-      logout: () => {
-        set(initialState);
-      }
+      logout: () => set({ 
+        user: null, 
+        token: null, 
+        isAuthenticated: false,
+        role: null,
+      }),
+
+      updateUser: (userData) =>
+        set((state) => ({
+          user: { ...state.user, ...userData, user_id: userData.user_id || userData.id },
+        })),
+
+      setRole: (role) => set({ role }),
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({
-        user: state.user,
-        token: state.token,
-        isAuthenticated: state.isAuthenticated,
-        userRoles: state.userRoles
-      })
+      getStorage: () => localStorage,
     }
   )
 );

@@ -12,7 +12,8 @@ import {
   FiFlag,
   FiPlus,
   FiEdit2,
-  FiTrash2
+  FiTrash2,
+  FiUser
 } from 'react-icons/fi';
 import TaskForm from '../components/TaskForm';
 
@@ -26,6 +27,8 @@ const ProjectDetail = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedProject, setEditedProject] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [assignedUsers, setAssignedUsers] = useState([]);
+  const [creatorName, setCreatorName] = useState('Desconocido');
 
   const { projectId } = useParams();
   const navigate = useNavigate();
@@ -33,6 +36,9 @@ const ProjectDetail = () => {
   const token = useStore(state => state.token);
   const userRole = useStore(state => state.role);
 
+  const canCreateTasks = () => {
+    return ['admin', 'Project Manager'].includes(userRole);
+  };
   // Función para calcular días hábiles
   const calculateBusinessDays = (startDate, endDate) => {
     const start = new Date(startDate);
@@ -52,7 +58,7 @@ const ProjectDetail = () => {
 
   const fetchData = async () => {
     if (!isAuthenticated || !token) {
-      setError("No estás autenticado");
+      setError('No estás autenticado');
       setLoading(false);
       return;
     }
@@ -62,24 +68,50 @@ const ProjectDetail = () => {
       const [projectData, tasksData, usersData] = await Promise.all([
         getProjectById(projectId),
         getProjectTasks(projectId),
-        getUsers()
+        getUsers(),
       ]);
 
+      console.log('Datos del proyecto recibidos:', projectData);
+      console.log('Usuarios disponibles:', usersData);
+
+      // Buscar el creador por ID
+      console.log('ID del creador:', projectData.created_by);
+      const creator = usersData.find(
+        (user) => parseInt(user.user_id) === parseInt(projectData.created_by)
+      );
+      console.log('Creador encontrado:', creator);
+
+      // Depurar configuración de creatorName
+      if (creator) {
+        const name = creator.name; // Usar el nombre directamente
+        console.log('Nombre del creador configurado:', name);
+        setCreatorName(name);
+      } else {
+        console.log('Creador no encontrado, estableciendo como Desconocido');
+        setCreatorName('Desconocido');
+      }
+
       setProject(projectData);
-      setEditedProject(projectData);
+      setEditedProject({
+        ...projectData,
+        assignedUsers: projectData.assignedUsers || [],
+      });
+      setAssignedUsers(projectData.assignedUsers || []);
       setTasks(tasksData);
       setAvailableUsers(usersData);
       setError(null);
     } catch (error) {
-      console.error("Error al cargar los datos:", error);
+      console.error('Error al cargar los datos:', error);
       setError(
         error.response?.data?.message ||
-        "Error al cargar los datos del proyecto. Por favor, intenta de nuevo."
+        'Error al cargar los datos del proyecto. Por favor, intenta de nuevo.'
       );
     } finally {
       setLoading(false);
     }
   };
+
+
 
   useEffect(() => {
     fetchData();
@@ -119,7 +151,8 @@ const ProjectDetail = () => {
       description: project.description,
       methodology: project.methodology,
       start_date: project.start_date,
-      end_date: project.end_date
+      end_date: project.end_date,
+      assignedUsers: project.assignedUsers || []
     });
     setIsEditing(true);
   };
@@ -140,8 +173,12 @@ const ProjectDetail = () => {
 
   const handleSaveEdit = async () => {
     try {
+      console.log('Guardando proyecto con datos:', editedProject);
       const updatedProject = await updateProject(projectId, editedProject);
-      setProject(updatedProject);
+      setProject({
+        ...updatedProject,
+        assignedUsers: updatedProject.assignedUsers || []
+      });
       setIsEditing(false);
       setError(null);
     } catch (error) {
@@ -258,9 +295,11 @@ const ProjectDetail = () => {
                     <span>Creado el: {new Date(project.created_at).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center text-gray-600">
+                    {console.log('Renderizando nombre del creador:', creatorName)}
                     <FiUsers className="w-5 h-5 mr-3 text-primary-500" />
-                    <span>Creado por: {project.created_by || "Desconocido"}</span>
+                    <span>Creado por: {creatorName}</span>
                   </div>
+
                   <div className="flex items-center text-gray-600">
                     <FiFlag className="w-5 h-5 mr-3 text-primary-500" />
                     {isEditing ? (
@@ -334,41 +373,63 @@ const ProjectDetail = () => {
                   </div>
                   {/* Usuarios asignados */}
                   <div className="bg-gray-50 rounded-lg p-6">
-                    <h3 className="text-sm font-medium text-gray-500 mb-4">Usuarios asignados</h3>
-                    <div className="flex flex-wrap gap-2">
+                    <h3 className="text-sm font-medium text-gray-500 mb-4">
+                      Miembros del equipo
+                    </h3>
+                    <div className="space-y-4">
                       {isEditing ? (
-                        <select
-                          multiple
-                          value={editedProject.assignedUsers}
-                          onChange={(e) => setEditedProject({
-                            ...editedTask,
-                            assignedUsers: Array.from(e.target.selectedOptions, option => option.value)
-                          })}
-                          className="w-full p-2 border rounded-lg"
-                        >
-                          {availableUsers.map(user => (
-                            <option key={user.user_id} value={user.user_id.toString()}>
-                              {user.name}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        project.assignedUsers?.map(userId => {
-                          const user = availableUsers.find(u => u.user_id.toString() === userId);
-                          return (
+                        <div className="border border-gray-300 rounded-lg w-full p-3 max-h-[300px] overflow-y-auto">
+                          {availableUsers.map((user) => (
                             <div
-                              key={userId}
-                              className="flex items-center bg-white px-4 py-2 rounded-lg shadow-sm"
+                              key={user.user_id}
+                              className="flex items-center p-2 hover:bg-gray-50"
                             >
-                              <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center mr-2">
-                                <FiUser className="w-4 h-4 text-primary-600" />
-                              </div>
-                              <span className="text-sm font-medium text-gray-700">
-                                {user ? user.name : "Usuario desconocido"}
-                              </span>
+                              <input
+                                type="checkbox"
+                                id={`user-${user.user_id}`}
+                                value={user.user_id.toString()}
+                                checked={editedProject.assignedUsers?.includes(user.user_id.toString())}
+                                onChange={(e) => {
+                                  const userId = e.target.value;
+                                  setEditedProject(prev => ({
+                                    ...prev,
+                                    assignedUsers: e.target.checked
+                                      ? [...(prev.assignedUsers || []), userId]
+                                      : (prev.assignedUsers || []).filter(id => id !== userId)
+                                  }));
+                                }}
+                                className="mr-3"
+                              />
+                              <label htmlFor={`user-${user.user_id}`}>
+                                {user.name}
+                              </label>
                             </div>
-                          );
-                        })
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {project.assignedUsers?.map((userId) => {
+                            const user = availableUsers.find(
+                              (u) => u.user_id.toString() === userId
+                            );
+                            return user ? (
+                              <div
+                                key={userId}
+                                className="flex items-center bg-white px-4 py-2 rounded-lg shadow-sm"
+                              >
+                                <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center mr-2">
+                                  <FiUser className="w-4 h-4 text-primary-600" />
+                                </div>
+                                <span className="text-sm font-medium text-gray-700">
+                                  {user.name}
+                                </span>
+                              </div>
+                            ) : null;
+                          })}
+                          {(!project.assignedUsers || project.assignedUsers.length === 0) && (
+                            <p className="text-gray-500">No hay miembros asignados al proyecto</p>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -402,13 +463,15 @@ const ProjectDetail = () => {
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 sm:mb-0">
                   Tareas del Proyecto
                 </h2>
-                <button
-                  onClick={() => setShowTaskForm(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-                >
-                  <FiPlus className="w-4 h-4" />
-                  Nueva Tarea
-                </button>
+                {canCreateTasks() && (
+                  <button
+                    onClick={() => setShowTaskForm(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                  >
+                    <FiPlus className="w-4 h-4" />
+                    Nueva Tarea
+                  </button>
+                )}
               </div>
 
               <div className="bg-gray-50 rounded-xl">
