@@ -14,8 +14,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     navigate(route);
   };
 
-  // Función para filtrar elementos del menú basado en el rol
   const getFilteredMenuItems = () => {
+    if (!isAuthenticated) return [];
+    
     return menuItemsConfig.map(item => {
       if (item.requiresAdmin && role !== 'admin') {
         return null;
@@ -45,11 +46,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {isAuthenticated && <StatisticsCard title="Proyectos activos" value="12" />}
     </ul>
   );
-
-  // Si no está autenticado, no renderizamos el sidebar
-  if (!isAuthenticated) {
-    return null;
-  }
 
   return (
     <>
