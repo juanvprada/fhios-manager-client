@@ -36,6 +36,9 @@ const ProjectDetail = () => {
   const token = useStore(state => state.token);
   const userRole = useStore(state => state.role);
 
+  const canCreateTasks = () => {
+    return ['admin', 'Project Manager'].includes(userRole);
+  };
   // Función para calcular días hábiles
   const calculateBusinessDays = (startDate, endDate) => {
     const start = new Date(startDate);
@@ -460,13 +463,15 @@ const ProjectDetail = () => {
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 sm:mb-0">
                   Tareas del Proyecto
                 </h2>
-                <button
-                  onClick={() => setShowTaskForm(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-                >
-                  <FiPlus className="w-4 h-4" />
-                  Nueva Tarea
-                </button>
+                {canCreateTasks() && (
+                  <button
+                    onClick={() => setShowTaskForm(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                  >
+                    <FiPlus className="w-4 h-4" />
+                    Nueva Tarea
+                  </button>
+                )}
               </div>
 
               <div className="bg-gray-50 rounded-xl">
