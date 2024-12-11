@@ -25,9 +25,8 @@ const RegisterForm = () => {
             setError('La contraseña debe tener al menos 8 caracteres.');
             return;
           }
-      
+
           console.log('Registration data:', { username, email, password });
-      
           setError('Registro exitoso. Redirigiendo...');
         };
      
