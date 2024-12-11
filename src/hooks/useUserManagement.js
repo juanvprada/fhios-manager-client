@@ -17,7 +17,7 @@ const useUserManagement = () => {
   const token = useStore(state => state.token);
   const isAuthenticated = useStore(state => state.isAuthenticated); // Obtener del store
 
-  const API_URL = 'http://localhost:5000';
+  const API_URL = 'http://localhost:3000';
 
   const getHeaders = useCallback(() => ({
     headers: {
