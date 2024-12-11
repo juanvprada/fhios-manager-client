@@ -108,3 +108,4 @@ TaskForm.propTypes = {
 };
 
 export default TaskForm;
+
