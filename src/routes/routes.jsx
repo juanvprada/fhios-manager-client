@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import Layout from "../layout/Layout";
 import Projects from "../pages/Projects";
 import UserManagement from "../pages/UserManagement";
@@ -19,7 +19,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <h1 className="text-2xl font-poppins"></h1>,
+        element: <Navigate to="/login" />,
       },
       {
         path: "registerform",
@@ -35,11 +35,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "roles/create",
-        element: <CreateRole />
+        element: <ProtectedRoute adminOnly={true}><CreateRole /></ProtectedRoute>
       },
       {
         path: "roles",
-        element: <RolesManagement />
+        element: <ProtectedRoute adminOnly={true}><RolesManagement /></ProtectedRoute>
       },
       {
         path: "projects",
