@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import useStore from "../store/store";
 
@@ -830,3 +830,20 @@ const CreateUserModal = ({ isOpen, onClose, roles, onSave }) => {
     </div>
   );
 };
+
+UserList.propTypes = {
+  user: PropTypes.shape({
+      user_id: PropTypes.string.isRequired,
+      first_name: PropTypes.string.isRequired,
+      last_name: PropTypes.string.isRequired,
+      email: PropTypes.string.isRequired,
+      status: PropTypes.string.isRequired,
+  }).isRequired,
+  roles: PropTypes.arrayOf(PropTypes.string).isRequired,
+  userRoles: PropTypes.arrayOf(PropTypes.string).isRequired,
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+};
+
+export default UserList;

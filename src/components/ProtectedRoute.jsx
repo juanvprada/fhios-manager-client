@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useCallback } from 'react';
 import useStore from "../store/store";
+import PropTypes from 'prop-types'; // Importa PropTypes
 
 const ProtectedRoute = ({ children, requiredPermission }) => {
   const store = useStore();
@@ -61,6 +62,12 @@ const ProtectedRoute = ({ children, requiredPermission }) => {
   }
 
   return children || <Outlet />;
+};
+
+// Agrega las validaciones de PropTypes
+ProtectedRoute.propTypes = {
+  children: PropTypes.node, // children puede ser cualquier tipo de contenido renderizado
+  requiredPermission: PropTypes.string, // requiredPermission es una cadena (string)
 };
 
 export default ProtectedRoute;

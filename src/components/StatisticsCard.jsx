@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from 'prop-types'; // Importa PropTypes
 
 const StatisticsCard = ({ title, value }) => {
   return (
@@ -7,6 +7,12 @@ const StatisticsCard = ({ title, value }) => {
       <p className="text-primary-500 text-lg font-bold">{value}</p>
     </li>
   );
+};
+
+// Agrega las validaciones de PropTypes
+StatisticsCard.propTypes = {
+  title: PropTypes.string.isRequired, // title debe ser una cadena (string) y es obligatorio
+  value: PropTypes.string.isRequired, // value debe ser una cadena (string) y es obligatorio
 };
 
 export default StatisticsCard;

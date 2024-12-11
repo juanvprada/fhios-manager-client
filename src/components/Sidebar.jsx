@@ -1,5 +1,5 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
+import PropTypes from "prop-types"; // Importa PropTypes
 import menuItemsConfig from "./menuItemsConfig";
 import StatisticsCard from "./StatisticsCard";
 
@@ -63,8 +63,13 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   );
 };
 
-export default Sidebar;
+// Agrega las validaciones de PropTypes
+Sidebar.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  setIsOpen: PropTypes.func.isRequired,
+};
 
+export default Sidebar;
 
 
 
