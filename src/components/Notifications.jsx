@@ -15,7 +15,6 @@ const Notifications = () => {
 
   return (
     <div className="relative">
-      {/* Icono de notificaciones */}
       <button
         className="relative flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full"
         onClick={() => setShowDropdown(!showDropdown)}
@@ -28,7 +27,6 @@ const Notifications = () => {
         )}
       </button>
 
-      {/* Dropdown */}
       {showDropdown && (
         <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
           <div className="p-4 text-sm text-gray-700 font-bold border-b">Notificaciones</div>
