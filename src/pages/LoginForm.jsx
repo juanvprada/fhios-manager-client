@@ -39,7 +39,7 @@ const LoginForm = () => {
           if (userResponse.data.data) {
             // Pasar también el role al login
             login(userResponse.data.data, token, role);
-            navigate('/dashboard');
+            navigate('/projects');
           } else {
             setError('Error al obtener datos del usuario');
           }
