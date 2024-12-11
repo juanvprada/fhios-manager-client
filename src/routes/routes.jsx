@@ -3,7 +3,7 @@ import Layout from "../layout/Layout";
 import Projects from "../pages/Projects";
 import LoginForm from "../pages/LoginForm";
 import ProtectedRoute from "../components/ProtectedRoute";
-import RegisterForm from "../pages/RegisterForm";
+import Dashboard from "../pages/Dashboard";
 
 
 export const router = createBrowserRouter([
@@ -40,8 +40,8 @@ export const router = createBrowserRouter([
         element: <LoginForm />,
       },
       {
-        path: "RegisterForm",
-        element: <RegisterForm />,
+        path: "dashboard",
+        element: <Dashboard />,
       }
     ],
   },
