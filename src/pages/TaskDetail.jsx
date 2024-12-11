@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTaskById, updateTask, deleteTask } from '../services/taskServices';
 import { getUsers } from '../services/usersServices';

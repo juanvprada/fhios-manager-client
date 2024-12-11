@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import PropTypes from 'prop-types';
+import { useState } from 'react';
 
 const DocumentUploadModal = ({ onSubmit, onClose }) => {
     const [title, setTitle] = useState('');
@@ -77,6 +78,11 @@ const DocumentUploadModal = ({ onSubmit, onClose }) => {
             </div>
         </div>
     );
+};
+
+DocumentUploadModal.propTypes = {
+    onSubmit: PropTypes.func.isRequired,
+    onClose: PropTypes.func.isRequired,
 };
 
 export default DocumentUploadModal;
