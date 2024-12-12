@@ -15,45 +15,57 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    if (!email || !password) {
-      setError('Por favor, completa todos los campos.');
-      return;
-    }
-  
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', { 
-        email, 
-        password 
+      // Primer paso: Login
+      const loginResponse = await axios.post("http://localhost:3000/api/auth/login", {
+        email,
+        password
       });
   
-      if (response.data.token) {
-        const token = response.data.token;
-        
-        // Configurar axios
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      if (loginResponse.data.token) {
+        const token = loginResponse.data.token;
         
         try {
-          const userResponse = await axios.get('http://localhost:3000/api/auth/profile');
-          console.log('Profile Response:', userResponse.data); // Para debug
+          // Configurar headers para las siguientes peticiones
+          const config = {
+            headers: { Authorization: `Bearer ${token}` }
+          };
   
-          // Verificar que estamos recibiendo los datos correctamente
-          if (userResponse.data.data) {
-            // Guardar los datos del usuario en el store
-            login(userResponse.data.data, token);
-            navigate('/dashboard');
-          } else {
-            setError('Error al obtener datos del usuario');
-          }
+          // Segundo paso: Obtener perfil
+          const profileResponse = await axios.get(
+            "http://localhost:3000/api/auth/profile",
+            config
+          );
+          
+          console.log("Profile Response:", profileResponse.data);
+  
+          // Tercer paso: Obtener roles DESPUÉS de tener el perfil
+          const userRolesResponse = await axios.get(
+            `http://localhost:3000/api/roles/user/${profileResponse.data.data.id}`,
+            config
+          );
+  
+          const userData = profileResponse.data.data;
+          const userRoles = userRolesResponse.data.data || [];
+  
+          // Almacenar en el store
+          login({
+            user: userData,
+            token,
+            roles: userRoles.length > 0 ? userRoles : [{ role_name: 'USER' }]
+          });
+  
+          navigate("/dashboard");
         } catch (profileError) {
-          console.error('Error al obtener perfil:', profileError);
-          setError('Error al obtener información del usuario');
+          console.error("Error al obtener perfil:", profileError);
+          setError("Error al obtener información del usuario");
         }
       } else {
-        setError('Error en la respuesta del servidor');
+        setError("Credenciales inválidas");
       }
     } catch (error) {
-      console.error('Error de autenticación:', error);
-      setError(error.response?.data?.error || 'Error al conectar con el servidor');
+      console.error("Error de login:", error);
+      setError("Credenciales inválidas");
     }
   };
 
