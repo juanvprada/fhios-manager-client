@@ -2,7 +2,7 @@ import React from 'react';
 import { Download, FileText } from 'lucide-react';
 import { downloadDocument } from '../services/documentServices';
 
-const DocumentList = ({ documents }) => {
+const DocumentList = ({ documents, descriptions, users }) => {
   const handleDownload = async (documentId) => {
     try {
       await downloadDocument(documentId);
@@ -37,7 +37,12 @@ const DocumentList = ({ documents }) => {
               </div>
             </div>
             <p className="mt-2 text-sm text-gray-700">
-              {doc.description || <span className="italic text-gray-400">Sin descripción</span>}
+              {descriptions[doc.document_id] || (
+                <span className="italic text-gray-400">Sin descripción</span>
+              )}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Subido por: {users[doc.uploaded_by]?.name || 'Desconocido'}
             </p>
           </div>
 
@@ -55,3 +60,5 @@ const DocumentList = ({ documents }) => {
 };
 
 export default DocumentList;
+
+

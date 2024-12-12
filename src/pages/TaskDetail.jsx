@@ -28,6 +28,7 @@ const TaskDetail = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showDocumentUploadModal, setShowDocumentUploadModal] = useState(false);
     const [documentError, setDocumentError] = useState({ show: false, message: '' });
+    const [documentDescriptions, setDocumentDescriptions] = useState({});
 
     const { projectId, taskId } = useParams();
     const navigate = useNavigate();
@@ -62,8 +63,18 @@ const TaskDetail = () => {
                     priority: taskData.priority || 'low',
                     due_date: taskData.due_date || ''
                 });
+                const userMap = {};
+                usersData.forEach(user => {
+                    userMap[user.user_id] = user.name;
+                });
+                setAvailableUsers(userMap);
+
                 setAvailableUsers(usersData);
                 setError(null);
+
+                // Cargar descripciones de documentos desde localStorage
+                const savedDescriptions = JSON.parse(localStorage.getItem('documentDescriptions') || '{}');
+                setDocumentDescriptions(savedDescriptions);
             } catch (error) {
                 console.error("Error al cargar la tarea:", error);
                 setError(error.response?.data?.message || "Error al cargar los datos de la tarea");
@@ -74,6 +85,11 @@ const TaskDetail = () => {
 
         fetchData();
     }, [taskId, isAuthenticated, token]);
+
+    useEffect(() => {
+        // Guardar descripciones en localStorage cada vez que cambien
+        localStorage.setItem('documentDescriptions', JSON.stringify(documentDescriptions));
+    }, [documentDescriptions]);
 
     const handleEditClick = () => {
         setIsEditing(true);
@@ -108,21 +124,28 @@ const TaskDetail = () => {
     const handleDocumentUpload = async (formData) => {
         try {
             setLoading(true);
-            formData.append('taskId', taskId);
 
             const newDocument = await uploadDocument(taskId, formData);
-            setDocuments(prev => [...prev, newDocument]);
+
+            // Guardar la descripción localmente
+            setDocumentDescriptions((prev) => ({
+                ...prev,
+                [newDocument.document_id]: formData.get('description'),
+            }));
+
+            setDocuments((prev) => [...prev, newDocument]);
             setShowDocumentUploadModal(false);
         } catch (error) {
             console.error('Error al subir el documento:', error);
             setDocumentError({
                 show: true,
-                message: 'Error al subir el documento. Por favor, inténtelo de nuevo.'
+                message: 'Error al subir el documento. Por favor, inténtelo de nuevo.',
             });
         } finally {
             setLoading(false);
         }
     };
+
 
     const renderDocumentsSection = () => (
         <div className="mt-8">
@@ -137,7 +160,11 @@ const TaskDetail = () => {
                 </button>
             </div>
 
-            <DocumentList documents={documents} />
+            <DocumentList
+                documents={documents}
+                descriptions={documentDescriptions}
+                users={availableUsers}
+            />
 
             {showDocumentUploadModal && (
                 <DocumentUploadModal
