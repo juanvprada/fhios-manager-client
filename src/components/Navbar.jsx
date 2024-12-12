@@ -1,16 +1,25 @@
 import React, { useState } from "react";
-import { Bell, ChevronDown, Menu } from "lucide-react";
+import { ChevronDown, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useStore from '../store/store';
+import NotificationBell from './NotificationBell';
+import NotificationDropdown from '../components/NotificationsDropdown';
 
 const Navbar = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const user = useStore(state => state.user);
   const logout = useStore(state => state.logout);
 
   const toggleProfileDropdown = () => {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
+    setIsNotificationsOpen(false);
+  };
+
+  const toggleNotifications = () => {
+    setIsNotificationsOpen(!isNotificationsOpen);
+    setIsProfileDropdownOpen(false); 
   };
 
   const handleLogout = () => {
@@ -53,12 +62,13 @@ const Navbar = ({ isOpen, setIsOpen }) => {
       {/* Right Side Actions */}
       <div className="flex items-center space-x-2 sm:space-x-4">
         {/* Notifications */}
-        <button className="relative p-2 hover:bg-secondary-200 rounded-full">
-          <Bell className="w-5 h-5 text-secondary-600" />
-          <span className="absolute top-0 right-0 bg-primary-500 text-white text-xs rounded-full px-1.5 py-0.5">
-            3
-          </span>
-        </button>
+        <div className="relative">
+          <NotificationBell onClick={toggleNotifications} />
+          <NotificationDropdown
+            isOpen={isNotificationsOpen}
+            onClose={() => setIsNotificationsOpen(false)}
+          />
+        </div>
 
         {/* Profile Section */}
         <div className="relative">
