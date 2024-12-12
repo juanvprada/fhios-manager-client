@@ -1,14 +1,22 @@
 import React, { useState } from "react";
 import { Bell, ChevronDown, Menu } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import useStore from '../store/store';
 
 const Navbar = ({ isOpen, setIsOpen }) => {
+  const navigate = useNavigate();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const user = useStore(state => state.user);
   const logout = useStore(state => state.logout);
 
   const toggleProfileDropdown = () => {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setIsProfileDropdownOpen(false);
+    navigate('/login');
   };
 
   // Función para obtener las iniciales
@@ -35,7 +43,7 @@ const Navbar = ({ isOpen, setIsOpen }) => {
         </button>
 
         <div className="flex items-center">
-        <div className="hidden md:flex items-center justify-center h-10 w-10 bg-primary-500 text-white rounded-full mr-4">
+          <div className="hidden md:flex items-center justify-center h-10 w-10 bg-primary-500 text-white rounded-full mr-4">
             <span className="font-bold text-lg">FM</span>
           </div>
           <h1 className="text-xl font-bold text-primary-600 hidden sm:block">Fhios Manager</h1>
@@ -59,8 +67,8 @@ const Navbar = ({ isOpen, setIsOpen }) => {
             className="flex items-center space-x-2 hover:bg-secondary-200 px-2 sm:px-3 py-2 rounded-md"
           >
             <div className="flex items-center justify-center w-8 h-8 bg-secondary-500 text-white rounded-full">
-  <span className="font-bold text-sm">{getInitials()}</span>
-</div>
+              <span className="font-bold text-sm">{getInitials()}</span>
+            </div>
             <span className="text-sm font-medium text-secondary-700 hidden sm:block">
               {getFullName()}
             </span>
@@ -91,10 +99,7 @@ const Navbar = ({ isOpen, setIsOpen }) => {
                   Configuración
                 </button>
                 <button
-                  onClick={() => {
-                    logout();
-                    setIsProfileDropdownOpen(false);
-                  }}
+                  onClick={handleLogout}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Cerrar sesión
