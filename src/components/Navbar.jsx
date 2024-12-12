@@ -19,7 +19,7 @@ const Navbar = ({ isOpen, setIsOpen }) => {
 
   const toggleNotifications = () => {
     setIsNotificationsOpen(!isNotificationsOpen);
-    setIsProfileDropdownOpen(false); 
+    setIsProfileDropdownOpen(false);
   };
 
   const handleLogout = () => {
@@ -61,14 +61,16 @@ const Navbar = ({ isOpen, setIsOpen }) => {
 
       {/* Right Side Actions */}
       <div className="flex items-center space-x-2 sm:space-x-4">
-        {/* Notifications */}
-        <div className="relative">
-          <NotificationBell onClick={toggleNotifications} />
-          <NotificationDropdown
-            isOpen={isNotificationsOpen}
-            onClose={() => setIsNotificationsOpen(false)}
-          />
-        </div>
+        {/* Notifications - Solo mostrar si hay usuario logueado */}
+        {user && (
+          <div className="relative">
+            <NotificationBell onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} />
+            <NotificationDropdown
+              isOpen={isNotificationsOpen}
+              onClose={() => setIsNotificationsOpen(false)}
+            />
+          </div>
+        )}
 
         {/* Profile Section */}
         <div className="relative">
