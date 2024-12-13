@@ -11,6 +11,8 @@ import ProjectDetail from '../pages/ProjectDetail';
 import TaskDetail from '../pages/TaskDetail';
 import CreateRole from '../pages/CreateRole';
 import RolesManagement from "../pages/RolesManagement";
+import Profile from "../pages/Profile";
+import useStore from '../store/store';
 
 export const router = createBrowserRouter([
   {
@@ -32,6 +34,14 @@ export const router = createBrowserRouter([
       {
         path: "dashboard",
         element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
+      },
+      {
+        path: "profile",
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "roles/create",

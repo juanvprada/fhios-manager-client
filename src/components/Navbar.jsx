@@ -28,6 +28,11 @@ const Navbar = ({ isOpen, setIsOpen }) => {
     navigate('/login');
   };
 
+  const handleNavigateToProfile = () => {
+    setIsProfileDropdownOpen(false);
+    navigate('/profile');
+  };
+
   // Función para obtener las iniciales
   const getInitials = () => {
     if (!user) return 'U';
@@ -64,7 +69,7 @@ const Navbar = ({ isOpen, setIsOpen }) => {
         {/* Notifications - Solo mostrar si hay usuario logueado */}
         {user && (
           <div className="relative">
-            <NotificationBell onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} />
+            <NotificationBell onClick={toggleNotifications} />
             <NotificationDropdown
               isOpen={isNotificationsOpen}
               onClose={() => setIsNotificationsOpen(false)}
@@ -95,9 +100,7 @@ const Navbar = ({ isOpen, setIsOpen }) => {
                 </div>
                 <hr />
                 <button
-                  onClick={() => {
-                    setIsProfileDropdownOpen(false);
-                  }}
+                  onClick={handleNavigateToProfile}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Mi Perfil
