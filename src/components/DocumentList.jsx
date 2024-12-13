@@ -1,8 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download, FileText } from 'lucide-react';
 import { downloadDocument } from '../services/documentServices';
+import { getUsers } from '../services/usersServices';
 
-const DocumentList = ({ documents, descriptions, users }) => {
+const DocumentList = ({ documents, descriptions }) => {
+  const [users, setUsers] = useState({});
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const userList = await getUsers();
+        // Crear un objeto mapeado de id -> nombre para búsqueda rápida
+        const userMap = userList.reduce((acc, user) => ({
+          ...acc,
+          [user.user_id]: user.name
+        }), {});
+        setUsers(userMap);
+      } catch (error) {
+        console.error('Error al obtener usuarios:', error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
   const handleDownload = async (documentId) => {
     try {
       await downloadDocument(documentId);
@@ -42,7 +63,7 @@ const DocumentList = ({ documents, descriptions, users }) => {
               )}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Subido por: {users[doc.uploaded_by]?.name || 'Desconocido'}
+              Subido por: {users[doc.uploaded_by] || 'Usuario desconocido'}
             </p>
           </div>
 
