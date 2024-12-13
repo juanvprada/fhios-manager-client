@@ -164,6 +164,7 @@ const TaskDetail = () => {
                 documents={documents}
                 descriptions={documentDescriptions}
                 users={availableUsers}
+                task={task}
             />
 
             {showDocumentUploadModal && (

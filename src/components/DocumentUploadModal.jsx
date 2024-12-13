@@ -1,10 +1,12 @@
+// DocumentUploadModal.jsx
 import React, { useState } from 'react';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Clock } from 'lucide-react';
 
 const DocumentUploadModal = ({ taskId, onSubmit, onClose }) => {
   const [title, setTitle] = useState('');
   const [file, setFile] = useState(null);
   const [description, setDescription] = useState('');
+  const [hoursSpent, setHoursSpent] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -34,7 +36,9 @@ const DocumentUploadModal = ({ taskId, onSubmit, onClose }) => {
       const formData = new FormData();
       formData.append('title', title.trim());
       formData.append('file', file);
-      formData.append('description', description.trim());
+      // Añadimos las horas al final de la descripción
+      const descriptionWithHours = `${description.trim()}\n<!--HOURS:${hoursSpent}-->`;
+      formData.append('description', descriptionWithHours);
 
       await onSubmit(formData);
       onClose();
@@ -85,6 +89,25 @@ const DocumentUploadModal = ({ taskId, onSubmit, onClose }) => {
                 className="w-full h-20 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Breve descripción del documento"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Horas dedicadas *
+              </label>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={hoursSpent}
+                  onChange={(e) => setHoursSpent(parseFloat(e.target.value) || 0)}
+                  className="w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="0"
+                  required
+                />
+              </div>
             </div>
 
             <div>
