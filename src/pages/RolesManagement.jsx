@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiPlus, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiArrowLeft } from 'react-icons/fi';
 import axios from 'axios';
 import useStore from '../store/store';
 import CreateRole from './CreateRole';
@@ -51,20 +51,29 @@ const RolesManagement = () => {
     <div className="p-6 font-poppins">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-primary-500">Gestión de Roles</h1>
-        {/* Botón "Nuevo Rol" con estilo reducido en dispositivos móviles */}
+
+        {/* Botón "Nuevo Rol" con solo '+' en móviles y tamaño reducido */}
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-light rounded-lg hover:bg-primary-600 transition-colors
-        sm:px-3 sm:py-1 sm:text-sm" // Reduce padding y tamaño de texto en móviles
+            sm:px-2 sm:py-1 sm:text-lg" // Botón más pequeño en móviles
         >
-          <FiPlus /> Nuevo Rol
+          <FiPlus className="sm:w-5 sm:h-5 w-6 h-6" /> {/* Solo icono en móvil */}
         </button>
       </div>
 
+      {/* Modal de creación de rol */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-6"> {/* Márgenes laterales */}
+            <div className="p-4 relative">
+              {/* Botón de Cerrar (flecha) */}
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-4 left-4 text-primary-500 hover:text-primary-700"
+              >
+                <FiArrowLeft className="w-6 h-6" />
+              </button>
               <CreateRole onClose={() => {
                 setIsModalOpen(false);
                 fetchRoles();
@@ -73,6 +82,7 @@ const RolesManagement = () => {
           </div>
         </div>
       )}
+
 
       {/* Vista móvil con tarjetas */}
       <div className="md:hidden w-full space-y-4 px-2">
@@ -164,8 +174,9 @@ const RolesManagement = () => {
         </div>
       </div>
     </div>
-
   );
 };
 
 export default RolesManagement;
+
+
