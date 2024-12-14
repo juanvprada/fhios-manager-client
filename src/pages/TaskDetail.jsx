@@ -36,6 +36,10 @@ const TaskDetail = () => {
     const token = useStore(state => state.token);
     const userRole = useStore(state => state.role);
 
+    const canModifyTask = () => {
+        return ['admin', 'Project Manager'].includes(userRole);
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             if (!isAuthenticated || !token) {
@@ -72,7 +76,6 @@ const TaskDetail = () => {
                 setAvailableUsers(usersData);
                 setError(null);
 
-                // Cargar descripciones de documentos desde localStorage
                 const savedDescriptions = JSON.parse(localStorage.getItem('documentDescriptions') || '{}');
                 setDocumentDescriptions(savedDescriptions);
             } catch (error) {
@@ -87,7 +90,6 @@ const TaskDetail = () => {
     }, [taskId, isAuthenticated, token]);
 
     useEffect(() => {
-        // Guardar descripciones en localStorage cada vez que cambien
         localStorage.setItem('documentDescriptions', JSON.stringify(documentDescriptions));
     }, [documentDescriptions]);
 
@@ -101,11 +103,15 @@ const TaskDetail = () => {
 
     const onConfirmDelete = async () => {
         try {
+            setLoading(true);
             await deleteTask(taskId);
             navigate(`/projects/${projectId}`);
         } catch (error) {
             console.error('Error al eliminar la tarea:', error);
             setError('No se pudo eliminar la tarea. Por favor, intenta de nuevo.');
+        } finally {
+            setLoading(false);
+            setShowDeleteModal(false);
         }
     };
 
@@ -245,22 +251,61 @@ const TaskDetail = () => {
             <div className="w-full max-w-7xl px-4 sm:px-6 md:px-8 pt-6 pb-16">
                 <div className="max-w-6xl mx-auto">
                     <div className="sticky top-0 z-10 bg-gray-50 py-4">
-                        <div className="flex items-center">
-                            <button
-                                onClick={() => navigate(`/projects/${projectId}`)}
-                                className="mr-4 text-gray-600 hover:text-gray-900"
-                            >
-                                <FiArrowLeft className="w-6 h-6" />
-                            </button>
-                            {!isEditing ? (
-                                <h1 className="text-xl sm:text-2xl font-bold text-primary-500">{task.title}</h1>
-                            ) : (
-                                <input
-                                    type="text"
-                                    value={editedTask.title}
-                                    onChange={(e) => setEditedTask({ ...editedTask, title: e.target.value })}
-                                    className="text-xl sm:text-2xl font-bold bg-transparent border-b border-primary-500 focus:outline-none"
-                                />
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                                <button
+                                    onClick={() => navigate(`/projects/${projectId}`)}
+                                    className="mr-4 text-gray-600 hover:text-gray-900"
+                                >
+                                    <FiArrowLeft className="w-6 h-6" />
+                                </button>
+                                {!isEditing ? (
+                                    <h1 className="text-xl sm:text-2xl font-bold text-primary-500">{task.title}</h1>
+                                ) : (
+                                    <input
+                                        type="text"
+                                        value={editedTask.title}
+                                        onChange={(e) => setEditedTask({ ...editedTask, title: e.target.value })}
+                                        className="text-xl sm:text-2xl font-bold bg-transparent border-b border-primary-500 focus:outline-none"
+                                    />
+                                )}
+                            </div>
+
+                            {/* Botones de edición/eliminación */}
+                            {canModifyTask() && !isEditing && (
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={handleEditClick}
+                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                        title="Editar tarea"
+                                    >
+                                        <FiEdit2 className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        onClick={handleDeleteClick}
+                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                        title="Eliminar tarea"
+                                    >
+                                        <FiTrash2 className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            )}
+
+                            {isEditing && (
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={handleSaveEdit}
+                                        className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                                    >
+                                        Guardar
+                                    </button>
+                                    <button
+                                        onClick={() => setIsEditing(false)}
+                                        className="px-4 py-2 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-colors"
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -369,6 +414,13 @@ const TaskDetail = () => {
                             title="Eliminar Tarea"
                             message="¿Estás seguro de que deseas eliminar esta tarea? Esta acción no se puede deshacer."
                         />
+                        {showDocumentUploadModal && (
+                            <DocumentUploadModal
+                                taskId={taskId}
+                                onSubmit={handleDocumentUpload}
+                                onClose={() => setShowDocumentUploadModal(false)}
+                            />
+                        )}
 
                         <div className="flex flex-wrap gap-4 justify-end border-t pt-6">
                             <button

@@ -163,11 +163,15 @@ const ProjectDetail = () => {
 
   const onConfirmDelete = async () => {
     try {
+      setLoading(true);
       await deleteProject(projectId);
       navigate('/projects');
     } catch (error) {
-      console.error('Error al eliminar el proyecto:', error);
-      setError('No se pudo eliminar el proyecto. Por favor, intenta de nuevo.');
+      console.error('Error en la eliminación:', error);
+      setError('No se pudo eliminar el proyecto. ' + (error.message || 'Por favor, intenta de nuevo.'));
+    } finally {
+      setLoading(false);
+      setShowDeleteModal(false);
     }
   };
 

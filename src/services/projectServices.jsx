@@ -82,7 +82,25 @@ export const updateProject = async (projectId, updatedData) => {
   return response.data;
 };
 export const deleteProject = async (projectId) => {
-  await axios.delete(`${API_URL}/${projectId}`, getAuthHeader());
+  try {
+    const token = useStore.getState().token;
+    if (!token) {
+      throw new Error('No hay token de autenticación');
+    }
+
+    console.log('Intentando eliminar proyecto:', projectId);
+    const response = await axios.delete(`${API_URL}/${projectId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    console.log('Respuesta de eliminación:', response);
+    return response.data;
+  } catch (error) {
+    console.error('Error al eliminar proyecto:', error);
+    throw error.response?.data || error;
+  }
 };
 
 export const assignUserToProject = async (projectId, userId) => {
