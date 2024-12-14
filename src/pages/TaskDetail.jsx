@@ -7,6 +7,7 @@ import useStore from '../store/store';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import DocumentUploadModal from '../components/DocumentUploadModal';
 import DocumentList from '../components/DocumentList';
+import { deleteDocument } from '../services/documentServices';
 import {
     FiArrowLeft,
     FiCalendar,
@@ -169,8 +170,8 @@ const TaskDetail = () => {
             <DocumentList
                 documents={documents}
                 descriptions={documentDescriptions}
-                users={availableUsers}
                 task={task}
+                onDeleteDocument={handleDeleteDocument}
             />
 
             {showDocumentUploadModal && (
@@ -182,6 +183,16 @@ const TaskDetail = () => {
             )}
         </div>
     );
+    const handleDeleteDocument = async (documentId) => {
+        try {
+            await deleteDocument(documentId);
+            setDocuments(prevDocs => prevDocs.filter(doc => doc.document_id !== documentId));
+        } catch (error) {
+            console.error('Error al eliminar documento:', error);
+            setError('Error al eliminar el documento. Por favor, intenta de nuevo.');
+            throw error;
+        }
+    };
 
     const renderAssignedUsers = () => (
         <div className="bg-gray-50 rounded-lg p-6">

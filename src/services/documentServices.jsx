@@ -64,3 +64,16 @@ export const downloadDocument = async (documentId) => {
     throw new Error(error.response?.data?.message || 'Error al descargar el documento');
   }
 };
+
+export const deleteDocument = async (documentId) => {
+  try {
+    const response = await axios.delete(
+      `${API_URL}/documents/${documentId}`,
+      getAuthHeader()
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error en deleteDocument:', error);
+    throw error;
+  }
+};

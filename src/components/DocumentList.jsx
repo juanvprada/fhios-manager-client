@@ -1,11 +1,20 @@
 // DocumentList.jsx
 import React, { useState, useEffect } from 'react';
-import { Download, FileText, Clock } from 'lucide-react';
+import { Download, FileText, Clock, Trash2 } from 'lucide-react';
 import { downloadDocument } from '../services/documentServices';
 import { getUsers } from '../services/usersServices';
+import useStore from '../store/store';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
 
-const DocumentList = ({ documents, descriptions, task }) => {
+const DocumentList = ({ documents, descriptions, task, onDeleteDocument }) => {
   const [users, setUsers] = useState({});
+  const userRole = useStore(state => state.role);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState(null);
+
+  const canModifyTask = () => {
+    return ['admin', 'Project Manager', 'Tech Leader'].includes(userRole);
+  };
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -32,7 +41,6 @@ const DocumentList = ({ documents, descriptions, task }) => {
     }
   };
 
-  // Función para extraer las horas de la descripción
   const extractHours = (docId) => {
     const description = descriptions[docId];
     if (!description) return 0;
@@ -40,19 +48,16 @@ const DocumentList = ({ documents, descriptions, task }) => {
     return match ? parseFloat(match[1]) : 0;
   };
 
-  // Función para limpiar la descripción
   const cleanDescription = (docId) => {
     const description = descriptions[docId];
     if (!description) return '';
     return description.replace(/<!--HOURS:[\d.]+-->/g, '').trim();
   };
 
-  // Calcular total de horas usadas
   const totalHoursSpent = documents.reduce((acc, doc) => {
     return acc + extractHours(doc.document_id);
   }, 0);
 
-  // Calcular horas restantes
   const remainingHours = task?.estimated_hours ?
     Math.max(0, task.estimated_hours - totalHoursSpent) : 0;
 
@@ -63,10 +68,23 @@ const DocumentList = ({ documents, descriptions, task }) => {
       </div>
     );
   }
+  const handleDeleteClick = (documentId) => {
+    setDocumentToDelete(documentId);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await onDeleteDocument(documentToDelete);
+      setShowDeleteModal(false);
+      setDocumentToDelete(null);
+    } catch (error) {
+      console.error('Error al eliminar documento:', error);
+    }
+  };
 
   return (
     <div className="space-y-4">
-      {/* Resumen de horas */}
       <div className="p-4 bg-blue-50 rounded-lg">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center">
@@ -89,7 +107,6 @@ const DocumentList = ({ documents, descriptions, task }) => {
         </div>
       </div>
 
-      {/* Lista de documentos */}
       <div className="space-y-2">
         {documents.map((doc) => (
           <div
@@ -122,20 +139,40 @@ const DocumentList = ({ documents, descriptions, task }) => {
               </div>
             </div>
 
-            <button
-              onClick={() => handleDownload(doc.document_id)}
-              className="p-2 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
-              title="Descargar documento"
-            >
-              <Download className="w-5 h-5" />
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleDownload(doc.document_id)}
+                className="p-2 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
+                title="Descargar documento"
+              >
+                <Download className="w-5 h-5" />
+              </button>
+              {canModifyTask() && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDeleteClick(doc.document_id);
+                  }}
+                  className="p-2 text-gray-400 hover:text-red-600 rounded-full hover:bg-red-50 transition-colors"
+                  title="Eliminar documento"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Eliminar Documento"
+        message="¿Estás seguro de que deseas eliminar este documento? Esta acción no se puede deshacer."
+      />
     </div>
   );
 };
 
 export default DocumentList;
-
-
