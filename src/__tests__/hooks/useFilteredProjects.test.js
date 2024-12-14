@@ -1,40 +1,45 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import useFilteredProjects from '../../hooks/useFilteredProjects';
 
+// Simula el componente de prueba
 const HookWrapper = ({ projects, searchTerm, sortOrder }) => {
   const { filteredProjects } = useFilteredProjects(projects, searchTerm, sortOrder);
   return (
-    <div>
+    <ul>
       {filteredProjects.map((project) => (
-        <div key={project.project_id}>{project.project_name}</div>
+        <li key={project.project_id}>{project.project_name}</li>
       ))}
-    </div>
+    </ul>
   );
 };
 
 describe('useFilteredProjects', () => {
   const projectsMock = [
-    { project_id: 1, project_name: 'Project A', created_at: '2024-01-01' },
-    { project_id: 2, project_name: 'Project B', created_at: '2024-01-02' },
-    { project_id: 3, project_name: 'Alpha Project', created_at: '2024-01-03' },
+    { project_id: 1, project_name: 'Alpha Project', created_at: '2023-01-01' },
+    { project_id: 2, project_name: 'Beta Project', created_at: '2023-02-01' },
   ];
 
-  test('should render filtered projects by search term', () => {
-    render(<HookWrapper projects={projectsMock} searchTerm="alpha" sortOrder="asc" />);
-    expect(screen.getByText('Alpha Project')).toBeInTheDocument();
+  test('should render an empty list if no projects match', () => {
+    render(<HookWrapper projects={projectsMock} searchTerm="Gamma" sortOrder="asc" />);
+    expect(screen.queryByRole('listitem')).toBeNull();
   });
 
   test('should render projects in ascending order by default', () => {
     render(<HookWrapper projects={projectsMock} searchTerm="" sortOrder="asc" />);
-    expect(screen.getAllByText(/Project/).map((el) => el.textContent)).toEqual([
-      'Project A',
-      'Project B',
-      'Alpha Project',
-    ]);
+    const items = screen.getAllByRole('listitem').map((item) => item.textContent);
+    expect(items).toEqual(['Alpha Project', 'Beta Project']);
   });
 
-  test('should render an empty list if no projects match', () => {
-    render(<HookWrapper projects={projectsMock} searchTerm="notfound" sortOrder="asc" />);
-    expect(screen.queryByText(/Project/)).not.toBeInTheDocument();
+  test('should render filtered projects by search term', () => {
+    render(<HookWrapper projects={projectsMock} searchTerm="alpha" sortOrder="asc" />);
+    expect(screen.getByText('Alpha Project')).toBeInTheDocument();
+    expect(screen.queryByText('Beta Project')).not.toBeInTheDocument();
+  });
+
+  test('should render projects in descending order', () => {
+    render(<HookWrapper projects={projectsMock} searchTerm="" sortOrder="desc" />);
+    const items = screen.getAllByRole('listitem').map((item) => item.textContent);
+    expect(items).toEqual(['Beta Project', 'Alpha Project']);
   });
 });
