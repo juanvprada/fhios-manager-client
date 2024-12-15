@@ -25,7 +25,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "registerform",
-        element: <RegisterForm />,
+        element: <ProtectedRoute adminOnly={true}><RegisterForm /></ProtectedRoute>,
       },
       {
         path: "login",
