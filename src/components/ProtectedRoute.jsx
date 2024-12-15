@@ -23,7 +23,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 
   // Redirigir si requiere ser admin y no lo es
   if (adminOnly && authState.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/projects" replace />;
   }
 
   // Renderizar children si existen, sino usar Outlet para rutas anidadas
