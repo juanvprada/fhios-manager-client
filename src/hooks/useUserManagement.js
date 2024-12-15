@@ -38,12 +38,6 @@ const useUserManagement = () => {
         axios.get(`${API_URL}/user_roles`, getHeaders())
       ]);
 
-      console.log('Datos recibidos:', {
-        users: usersResponse.data,
-        roles: rolesResponse.data,
-        userRoles: userRolesResponse.data
-      });
-
       const usersData = usersResponse.data || [];
       const rolesData = rolesResponse.data || [];
       const userRolesData = userRolesResponse.data || [];
@@ -54,16 +48,10 @@ const useUserManagement = () => {
         return acc;
       }, {});
 
-      console.log('Mapa de roles:', rolesMap);
 
       // Combinar usuarios con sus roles
       const usersWithRoles = usersData.map(user => {
         const userRole = userRolesData.find(ur => ur.user_id === user.user_id);
-        console.log('Procesando usuario:', {
-          userId: user.user_id,
-          foundUserRole: userRole,
-          assignedRoleName: userRole ? rolesMap[userRole.role_id] : 'Sin rol'
-        });
 
         return {
           ...user,
@@ -76,8 +64,6 @@ const useUserManagement = () => {
           status: user.status
         };
       });
-
-      console.log('Usuarios procesados:', usersWithRoles);
 
       setRoles(rolesData);
       setUsers(usersWithRoles);

@@ -27,10 +27,6 @@ axiosInstance.interceptors.request.use(
 // Opcional: Interceptor para debugging
 axiosInstance.interceptors.response.use(
   (response) => {
-    console.log('Response:', {
-      url: response.config.url,
-      status: response.status
-    });
     return response;
   },
   (error) => {

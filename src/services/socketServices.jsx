@@ -8,11 +8,11 @@ const socket = io(BACKEND_URL, {
 });
 
 socket.on('connect', () => {
-  console.log('Conectado a Socket.IO');
+  
 });
 
 socket.on('connect_error', (error) => {
-  console.error('Error de conexión Socket.IO:', error);
+  
 });
 
 export default socket;

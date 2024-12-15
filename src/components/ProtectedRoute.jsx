@@ -9,12 +9,6 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     return useStore.getState();
   }, []); // Solo se ejecuta una vez
 
-  // Log para debug
-  console.log('Protected Route State:', {
-    isAuthenticated: authState.isAuthenticated,
-    role: authState.role,
-    adminOnly
-  });
 
   // Redirigir si no está autenticado
   if (!authState.isAuthenticated) {

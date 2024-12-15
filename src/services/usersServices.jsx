@@ -34,7 +34,6 @@ export const getUsers = async () => {
       };
     });
 
-    console.log('Formatted Users with Roles:', formattedUsers);
     return formattedUsers;
   } catch (error) {
     console.error('Error fetching users:', error);

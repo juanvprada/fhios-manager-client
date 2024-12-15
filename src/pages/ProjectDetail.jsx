@@ -71,23 +71,16 @@ const ProjectDetail = () => {
         getUsers(),
       ]);
 
-      console.log('Datos del proyecto recibidos:', projectData);
-      console.log('Usuarios disponibles:', usersData);
-
       // Buscar el creador por ID
-      console.log('ID del creador:', projectData.created_by);
       const creator = usersData.find(
         (user) => parseInt(user.user_id) === parseInt(projectData.created_by)
       );
-      console.log('Creador encontrado:', creator);
 
       // Depurar configuración de creatorName
       if (creator) {
         const name = creator.name; // Usar el nombre directamente
-        console.log('Nombre del creador configurado:', name);
         setCreatorName(name);
       } else {
-        console.log('Creador no encontrado, estableciendo como Desconocido');
         setCreatorName('Desconocido');
       }
 
@@ -177,7 +170,6 @@ const ProjectDetail = () => {
 
   const handleSaveEdit = async () => {
     try {
-      console.log('Guardando proyecto con datos:', editedProject);
       const updatedProject = await updateProject(projectId, editedProject);
       setProject({
         ...updatedProject,
@@ -299,7 +291,6 @@ const ProjectDetail = () => {
                     <span>Creado el: {new Date(project.created_at).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center text-gray-600">
-                    {console.log('Renderizando nombre del creador:', creatorName)}
                     <FiUsers className="w-5 h-5 mr-3 text-primary-500" />
                     <span>Creado por: {creatorName}</span>
                   </div>

@@ -34,7 +34,6 @@ const LoginForm = () => {
 
         try {
           const userResponse = await axios.get('http://localhost:3000/api/auth/profile');
-          console.log('Profile Response:', userResponse.data);
 
           if (userResponse.data.data) {
             // Pasar también el role al login

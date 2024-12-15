@@ -40,11 +40,9 @@ const NewProject = () => {
 
   useEffect(() => {
     if (!token) {
-      console.log('No token found');
       navigate('/login');
       return;
     }
-    console.log('Token found:', token);
     fetchUsers();
   }, [token, navigate]);
 
@@ -64,8 +62,6 @@ const NewProject = () => {
         selectedUsers: selectedUsers.map((id) => id.toString()),
         created_by: user.user_id,
       };
-
-      console.log("Datos enviados al backend:", projectData);
 
       await createProject(projectData);
       navigate("/projects");

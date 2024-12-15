@@ -37,14 +37,12 @@ const RolesManagement = () => {
 
   // Función para manejar la edición
   const handleEditRole = (role) => {
-    console.log("Editando rol:", role);
     setSelectedRole(role);
     setIsEditModalOpen(true);
   };
 
   // Función para manejar el click en eliminar
   const handleDeleteClick = (role) => {
-    console.log("Eliminando rol:", role);
     setSelectedRole(role);
     setIsDeleteModalOpen(true);
   };
