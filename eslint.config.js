@@ -3,20 +3,29 @@ import globals from 'globals'
 import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
+
 export default [
   { ignores: ['dist'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        React: 'writable' // Añade React como global
+      },
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
         sourceType: 'module',
       },
     },
-    settings: { react: { version: '18.3' } },
+    settings: { 
+      react: { 
+        version: '18.3',
+        runtime: 'automatic' // Añade esta línea
+      } 
+    },
     plugins: {
       react,
       'react-hooks': reactHooks,
@@ -32,6 +41,8 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      'react/react-in-jsx-scope': 'off', // Añade esta línea
+      'no-unused-vars': 'warn', // Cambia a 'warn' o 'off' según prefieras
     },
   },
 ]
