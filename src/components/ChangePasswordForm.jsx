@@ -1,4 +1,6 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+
 
 const ChangePasswordForm = ({
   currentPassword,
@@ -85,6 +87,19 @@ const ChangePasswordForm = ({
       </form>
     </div>
   );
+};
+
+ChangePasswordForm.propTypes = {
+  currentPassword: PropTypes.string.isRequired,
+  setCurrentPassword: PropTypes.func.isRequired,
+  newPassword: PropTypes.string.isRequired,
+  setNewPassword: PropTypes.func.isRequired,
+  confirmPassword: PropTypes.string.isRequired,
+  setConfirmPassword: PropTypes.func.isRequired,
+  handlePasswordUpdate: PropTypes.func.isRequired,
+  error: PropTypes.string,
+  success: PropTypes.string,
+  loading: PropTypes.bool.isRequired
 };
 
 export default ChangePasswordForm;

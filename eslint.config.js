@@ -42,7 +42,7 @@ export default [
         { allowConstantExport: true },
       ],
       'react/react-in-jsx-scope': 'off', // Añade esta línea
-      'no-unused-vars': 'warn', // Cambia a 'warn' o 'off' según prefieras
+      'no-unused-vars': 'off', // Cambia a 'warn' o 'off' según prefieras
     },
   },
 ]

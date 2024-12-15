@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import useNotificationStore from '../store/notificactionStore';
+import PropTypes from 'prop-types'; // Import PropTypes
 
 const NotificationDropdown = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
@@ -83,6 +84,12 @@ const NotificationDropdown = ({ isOpen, onClose }) => {
             </div>
         </div>
     );
+};
+
+// PropTypes validation for the props
+NotificationDropdown.propTypes = {
+    isOpen: PropTypes.bool.isRequired,
+    onClose: PropTypes.func.isRequired,
 };
 
 export default NotificationDropdown;

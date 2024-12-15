@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import useStore from '../store/store';
 import NotificationBell from './NotificationBell';
 import NotificationDropdown from '../components/NotificationsDropdown';
+import PropTypes from 'prop-types';
+
 
 const Navbar = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate();

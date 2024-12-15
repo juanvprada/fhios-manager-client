@@ -3,6 +3,7 @@ import { Bell } from 'lucide-react';
 import useNotificationStore from '../store/notificactionStore';
 import useStore from '../store/store';
 import socket from '../services/socketServices';
+import PropTypes from 'prop-types';
 
 const NotificationBell = ({ onClick }) => {
     const { unreadCount, fetchUnreadNotifications, addNotification } = useNotificationStore();
@@ -25,7 +26,7 @@ const NotificationBell = ({ onClick }) => {
                 socket.off(`notification:${user.id}`);
             }
         };
-    }, [user]);
+    }, [user, fetchUnreadNotifications, addNotification]); // Added missing dependencies
 
     return (
         <button
@@ -40,6 +41,11 @@ const NotificationBell = ({ onClick }) => {
             )}
         </button>
     );
+};
+
+// Added propTypes validation for 'onClick'
+NotificationBell.propTypes = {
+    onClick: PropTypes.func.isRequired,
 };
 
 export default NotificationBell;

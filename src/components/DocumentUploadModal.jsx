@@ -1,6 +1,6 @@
-// DocumentUploadModal.jsx
 import React, { useState } from 'react';
 import { Upload, X, Clock } from 'lucide-react';
+import PropTypes from 'prop-types'; // Add this import
 
 const DocumentUploadModal = ({ taskId, onSubmit, onClose }) => {
   const [title, setTitle] = useState('');
@@ -174,8 +174,9 @@ const DocumentUploadModal = ({ taskId, onSubmit, onClose }) => {
 };
 
 DocumentUploadModal.propTypes = {
-    onSubmit: PropTypes.func.isRequired,
-    onClose: PropTypes.func.isRequired,
+  taskId: PropTypes.string.isRequired,  // Add validation for taskId
+  onSubmit: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default DocumentUploadModal;
