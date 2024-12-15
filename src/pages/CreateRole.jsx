@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
-import { createRole } from '../services/rolesServices';
+import { createRole, updateRole } from '../services/rolesServices';
 
-const CreateRole = () => {
+const CreateRole = ({ initialData = null, onClose }) => {
   const [formData, setFormData] = useState({
     role_name: '',
     description: ''
@@ -12,6 +12,15 @@ const CreateRole = () => {
   const [error, setError] = useState(null);
   
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        role_name: initialData.role_name,
+        description: initialData.description || ''
+      });
+    }
+  }, [initialData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,30 +36,55 @@ const CreateRole = () => {
     setError(null);
 
     try {
-      await createRole(formData);
-      navigate('/roles');
+      if (initialData) {
+        await updateRole(initialData.role_id, formData);
+        if (onClose) {
+          onClose();
+        } else {
+          navigate('/roles');
+        }
+      } else {
+        await createRole(formData);
+        if (onClose) {
+          onClose();
+        } else {
+          navigate('/roles');
+        }
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al crear el rol');
+      setError(err.response?.data?.message || `Error al ${initialData ? 'actualizar' : 'crear'} el rol`);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleCancel = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      navigate(-1);
+    }
+  };
+
   return (
-    <div className=" font-poppins content-center flex flex-col justify-center items-center w-full">
+    <div className="font-poppins content-center flex flex-col justify-center items-center w-full">
       <div className="flex w-full items-center gap-4 mb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="text-primary-500 hover:text-primary-600"
-        >
-          <FiArrowLeft className="w-6 h-6" />
-        </button>
-        <h1 className="text-2xl font-bold text-primary-500">Crear Nuevo Rol</h1>
+        {!onClose && (
+          <button
+            onClick={handleCancel}
+            className="text-primary-500 hover:text-primary-600"
+          >
+            <FiArrowLeft className="w-6 h-6" />
+          </button>
+        )}
+        <h1 className="text-2xl font-bold text-primary-500">
+          {initialData ? 'Editar Rol' : 'Crear Nuevo Rol'}
+        </h1>
       </div>
 
       <form 
         onSubmit={handleSubmit} 
-        className="w-full bg-white p-6 rounded-lg "
+        className="w-full bg-white p-6 rounded-lg"
       >
         <div className="mb-6">
           <label 
@@ -98,7 +132,7 @@ const CreateRole = () => {
         <div className="flex justify-end gap-4">
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={handleCancel}
             className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
             disabled={loading}
           >
@@ -111,7 +145,7 @@ const CreateRole = () => {
             }`}
             disabled={loading}
           >
-            {loading ? 'Creando...' : 'Crear Rol'}
+            {loading ? (initialData ? 'Actualizando...' : 'Creando...') : (initialData ? 'Actualizar Rol' : 'Crear Rol')}
           </button>
         </div>
       </form>
