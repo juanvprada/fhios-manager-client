@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import Layout from "../layout/Layout";
 import Projects from "../pages/Projects";
 import UserManagement from "../pages/UserManagement";
@@ -11,6 +11,8 @@ import ProjectDetail from '../pages/ProjectDetail';
 import TaskDetail from '../pages/TaskDetail';
 import CreateRole from '../pages/CreateRole';
 import RolesManagement from "../pages/RolesManagement";
+import Profile from "../pages/Profile";
+import useStore from '../store/store';
 
 export const router = createBrowserRouter([
   {
@@ -23,7 +25,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <h1 className="text-2xl font-poppins"></h1>,
+        element: <Navigate to="/login" />,
       },
       {
         path: "registerform",
@@ -38,12 +40,20 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
       },
       {
+        path: "profile",
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "roles/create",
-        element: <CreateRole />
+        element: <ProtectedRoute adminOnly={true}><CreateRole /></ProtectedRoute>
       },
       {
         path: "roles",
-        element: <RolesManagement />
+        element: <ProtectedRoute adminOnly={true}><RolesManagement /></ProtectedRoute>
       },
       {
         path: "projects",

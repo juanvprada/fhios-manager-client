@@ -1,6 +1,7 @@
-import React from "react";
-import { FiSearch, FiEdit2, FiTrash2, FiUserCheck, FiX } from "react-icons/fi";
-import useUserManagement from "../hooks/useUserManagement";
+import React from 'react';
+import { FiSearch, FiEdit2, FiTrash2, FiUserCheck } from 'react-icons/fi';
+import useUserManagement from '../hooks/useUserManagement';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 
 const UserManagement = () => {
   const {
@@ -14,11 +15,20 @@ const UserManagement = () => {
     setShowRoleModal,
     filteredUsers,
     handleRoleChange,
+    showDeleteModal,
+    setShowDeleteModal,
+    userToDelete,
+    setUserToDelete,
     handleDeleteUser,
     loading,
     error,
     roles
   } = useUserManagement();
+
+  const handleDeleteClick = (user) => {
+    setUserToDelete(user);
+    setShowDeleteModal(true);
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -84,8 +94,8 @@ const UserManagement = () => {
         {/* Vista móvil (tarjetas) */}
         <div className="md:hidden w-full space-y-4 px-2">
           {filteredUsers.map((user) => (
-            <div 
-              key={user.user_id} 
+            <div
+              key={user.user_id}
               className="bg-white p-4 rounded-lg shadow-md space-y-3"
             >
               <div className="flex justify-between items-start">
@@ -104,7 +114,7 @@ const UserManagement = () => {
                     <FiEdit2 className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => handleDeleteUser(user.user_id)}
+                    onClick={() => handleDeleteClick(user)}
                     className="p-1 text-red-600 hover:text-red-900"
                   >
                     <FiTrash2 className="w-5 h-5" />
@@ -201,7 +211,7 @@ const UserManagement = () => {
                             <FiEdit2 className="w-5 h-5" />
                           </button>
                           <button
-                            onClick={() => handleDeleteUser(user.user_id)}
+                            onClick={() => handleDeleteClick(user)}
                             className="text-red-600 hover:text-red-900 transition-colors duration-200"
                           >
                             <FiTrash2 className="w-5 h-5" />
@@ -230,27 +240,25 @@ const UserManagement = () => {
                     onClick={() => handleRoleChange(selectedUser.user_id, role.role_id)}
                     className={`w-full p-2 text-left rounded-lg flex items-center gap-2 transition-colors duration-200 
                       ${selectedUser.role === role.role_name ? 'bg-primary-50' : ''}
-                      ${
-                        role.role_name.toLowerCase() === 'admin' 
-                          ? 'hover:bg-purple-50' 
-                          : role.role_name === 'Project Manager'
-                            ? 'hover:bg-green-50'
-                            : role.role_name === 'Tech Leader'
-                              ? 'hover:bg-blue-50'
-                              : 'hover:bg-gray-50'
+                      ${role.role_name.toLowerCase() === 'admin'
+                        ? 'hover:bg-purple-50'
+                        : role.role_name === 'Project Manager'
+                          ? 'hover:bg-green-50'
+                          : role.role_name === 'Tech Leader'
+                            ? 'hover:bg-blue-50'
+                            : 'hover:bg-gray-50'
                       }`}
                   >
-                    <FiUserCheck 
+                    <FiUserCheck
                       className={`
                         ${selectedUser.role === role.role_name ? 'text-primary-500' : ''}
-                        ${
-                          role.role_name.toLowerCase() === 'admin'
-                            ? 'text-purple-500'
-                            : role.role_name === 'Project Manager'
-                              ? 'text-green-500'
-                              : role.role_name === 'Tech Leader'
-                                ? 'text-blue-500'
-                                : 'text-gray-400'
+                        ${role.role_name.toLowerCase() === 'admin'
+                          ? 'text-purple-500'
+                          : role.role_name === 'Project Manager'
+                            ? 'text-green-500'
+                            : role.role_name === 'Tech Leader'
+                              ? 'text-blue-500'
+                              : 'text-gray-400'
                         }
                       `}
                     />
@@ -267,6 +275,16 @@ const UserManagement = () => {
             </div>
           </div>
         )}
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setUserToDelete(null);
+          }}
+          onConfirm={() => userToDelete && handleDeleteUser(userToDelete.user_id)}
+          title="Eliminar Usuario"
+          message={`¿Estás seguro de que deseas eliminar al usuario ${userToDelete?.name}? Esta acción no se puede deshacer.`}
+        />
       </div>
     </div>
   );

@@ -7,16 +7,18 @@ import useStore from "../store/store";
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate();
   const role = useStore((state) => state.role);
+  const isAuthenticated = useStore((state) => state.isAuthenticated);
 
+  // Función de manejo de clics en los ítems
   const handleItemClick = (route) => {
     setIsOpen(false);
-    navigate(route);
+    navigate(route); 
   };
 
-  // Función para filtrar elementos del menú basado en el rol
   const getFilteredMenuItems = () => {
+    if (!isAuthenticated) return [];
+
     return menuItemsConfig.map(item => {
-      
       if (item.requiresAdmin && role !== 'admin') {
         return null;
       }
@@ -31,7 +33,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {items.map((item, index) => (
         <li
           key={index}
-          onClick={() => navigate(item.route)}
+          onClick={() => handleItemClick(item.route)}
           className="flex items-center gap-3 md:gap-4 p-3 rounded-lg hover:bg-primary-100 cursor-pointer transition duration-300 ease-in-out"
         >
           <span className="material-icons text-primary-500 text-xl md:text-2xl">
@@ -42,7 +44,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           </span>
         </li>
       ))}
-      <StatisticsCard title="Proyectos activos" value="12" />
+      {isAuthenticated && <StatisticsCard title="Proyectos activos" value="12" />}
     </ul>
   );
 
@@ -74,8 +76,3 @@ Sidebar.propTypes = {
 };
 
 export default Sidebar;
-
-
-
-
-

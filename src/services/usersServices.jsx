@@ -21,7 +21,7 @@ export const getUsers = async () => {
       axios.get(`${API_URL}/users`, getAuthHeader()),
       axios.get(`${API_URL}/user_roles`, getAuthHeader())
     ]);
-    
+
     // Formatear los datos combinando usuarios y roles
     const formattedUsers = usersResponse.data.map(user => {
       const userRole = rolesResponse.data.find(
@@ -62,7 +62,7 @@ export const updateUserRole = async (userId, roleName) => {
     // Primero obtener el role_id basado en el nombre del rol
     const rolesResponse = await axios.get(`${API_URL}/roles`, getAuthHeader());
     const role = rolesResponse.data.find(r => r.role_name === roleName);
-    
+
     if (!role) {
       throw new Error(`Role ${roleName} not found`);
     }
@@ -87,6 +87,23 @@ export const deleteUser = async (userId) => {
     await axios.delete(`${API_URL}/users/${userId}`, getAuthHeader());
   } catch (error) {
     console.error('Error deleting user:', error);
+    throw error;
+  }
+};
+
+export const updateUserPassword = async (userId, currentPassword, newPassword) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}/auth/change-password`,
+      {
+        currentPassword,
+        newPassword
+      },
+      getAuthHeader()
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error updating password:', error);
     throw error;
   }
 };

@@ -2,15 +2,16 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTaskById, updateTask, deleteTask } from '../services/taskServices';
 import { getUsers } from '../services/usersServices';
-import { createDocument, getDocumentsByTaskId } from '../services/documentServices';
+import { uploadDocument, getTaskDocuments } from '../services/documentServices';
 import useStore from '../store/store';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import DocumentUploadModal from '../components/DocumentUploadModal';
+import DocumentList from '../components/DocumentList';
+import { deleteDocument } from '../services/documentServices';
 import {
     FiArrowLeft,
     FiCalendar,
     FiUser,
-    FiFlag,
     FiEdit2,
     FiTrash2,
     FiClock,
@@ -27,12 +28,18 @@ const TaskDetail = () => {
     const [editedTask, setEditedTask] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showDocumentUploadModal, setShowDocumentUploadModal] = useState(false);
+    const [documentError, setDocumentError] = useState({ show: false, message: '' });
+    const [documentDescriptions, setDocumentDescriptions] = useState({});
 
     const { projectId, taskId } = useParams();
     const navigate = useNavigate();
     const isAuthenticated = useStore(state => state.isAuthenticated);
     const token = useStore(state => state.token);
     const userRole = useStore(state => state.role);
+
+    const canModifyTask = () => {
+        return ['admin', 'Project Manager'].includes(userRole);
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -48,26 +55,30 @@ const TaskDetail = () => {
                     getTaskById(taskId),
                     getUsers()
                 ]);
-                console.log('Task data:', taskData);
-                console.log('Users data:', usersData);
 
-                const documentList = await getDocumentsByTaskId(taskId);
-                console.log('Documents:', documentList);
-                if (Array.isArray(documentList)) {
-                    setDocuments(documentList);
-                } else {
-                    console.error('La respuesta de getDocumentsByTaskId no es un arreglo:', documentList);
-                    setDocuments([]);
-                }
+                const documentList = await getTaskDocuments(taskId);
+                setDocuments(Array.isArray(documentList) ? documentList : []);
 
                 setTask(taskData);
                 setEditedTask({
                     ...taskData,
                     assignedUsers: taskData.assignedUsers || [],
-                    estimated_hours: taskData.estimated_hours
+                    estimated_hours: taskData.estimated_hours || 0,
+                    status: taskData.status || 'pending',
+                    priority: taskData.priority || 'low',
+                    due_date: taskData.due_date || ''
                 });
+                const userMap = {};
+                usersData.forEach(user => {
+                    userMap[user.user_id] = user.name;
+                });
+                setAvailableUsers(userMap);
+
                 setAvailableUsers(usersData);
                 setError(null);
+
+                const savedDescriptions = JSON.parse(localStorage.getItem('documentDescriptions') || '{}');
+                setDocumentDescriptions(savedDescriptions);
             } catch (error) {
                 console.error("Error al cargar la tarea:", error);
                 setError(error.response?.data?.message || "Error al cargar los datos de la tarea");
@@ -79,6 +90,10 @@ const TaskDetail = () => {
         fetchData();
     }, [taskId, isAuthenticated, token]);
 
+    useEffect(() => {
+        localStorage.setItem('documentDescriptions', JSON.stringify(documentDescriptions));
+    }, [documentDescriptions]);
+
     const handleEditClick = () => {
         setIsEditing(true);
     };
@@ -89,11 +104,15 @@ const TaskDetail = () => {
 
     const onConfirmDelete = async () => {
         try {
+            setLoading(true);
             await deleteTask(taskId);
             navigate(`/projects/${projectId}`);
         } catch (error) {
             console.error('Error al eliminar la tarea:', error);
             setError('No se pudo eliminar la tarea. Por favor, intenta de nuevo.');
+        } finally {
+            setLoading(false);
+            setShowDeleteModal(false);
         }
     };
 
@@ -109,100 +128,106 @@ const TaskDetail = () => {
         }
     };
 
-    const handleDocumentUpload = async (documentData) => {
+    const handleDocumentUpload = async (formData) => {
         try {
-            const newDocument = await createDocument(documentData);
-            setDocuments([...documents, { ...newDocument, description: documentData.has('description') ? documentData.get('description') : '' }]);
+            setLoading(true);
+
+            const newDocument = await uploadDocument(taskId, formData);
+
+            // Guardar la descripción localmente
+            setDocumentDescriptions((prev) => ({
+                ...prev,
+                [newDocument.document_id]: formData.get('description'),
+            }));
+
+            setDocuments((prev) => [...prev, newDocument]);
             setShowDocumentUploadModal(false);
         } catch (error) {
             console.error('Error al subir el documento:', error);
-            setError('Error al subir el documento');
+            setDocumentError({
+                show: true,
+                message: 'Error al subir el documento. Por favor, inténtelo de nuevo.',
+            });
+        } finally {
+            setLoading(false);
         }
     };
+
+
+    const renderDocumentsSection = () => (
+        <div className="mt-8">
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">Documentos</h2>
+                <button
+                    onClick={() => setShowDocumentUploadModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                >
+                    <FiPlus className="w-4 h-4" />
+                    Subir Documento
+                </button>
+            </div>
+
+            <DocumentList
+                documents={documents}
+                descriptions={documentDescriptions}
+                task={task}
+                onDeleteDocument={handleDeleteDocument}
+            />
+
+            {showDocumentUploadModal && (
+                <DocumentUploadModal
+                    taskId={taskId}
+                    onSubmit={handleDocumentUpload}
+                    onClose={() => setShowDocumentUploadModal(false)}
+                />
+            )}
+        </div>
+    );
+    const handleDeleteDocument = async (documentId) => {
+        try {
+            await deleteDocument(documentId);
+            setDocuments(prevDocs => prevDocs.filter(doc => doc.document_id !== documentId));
+        } catch (error) {
+            console.error('Error al eliminar documento:', error);
+            setError('Error al eliminar el documento. Por favor, intenta de nuevo.');
+            throw error;
+        }
+    };
+
     const renderAssignedUsers = () => (
         <div className="bg-gray-50 rounded-lg p-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-4">
-                Usuarios asignados
-            </h3>
+            <h3 className="text-sm font-medium text-gray-500 mb-4">Usuarios asignados</h3>
             {isEditing ? (
-                <>
-                    <div className="border border-gray-300 rounded-lg w-full p-3 max-h-[300px] overflow-y-auto">
-                        {availableUsers.map((user) => (
-                            <div
-                                key={user.user_id}
-                                className="flex items-center p-2 hover:bg-gray-50"
-                            >
-                                <input
-                                    type="checkbox"
-                                    id={`user-${user.user_id}`}
-                                    value={user.user_id.toString()}
-                                    checked={editedTask.assignedUsers.includes(user.user_id.toString())}
-                                    onChange={(e) => {
-                                        const userId = e.target.value;
-                                        setEditedTask(prev => ({
-                                            ...prev,
-                                            assignedUsers: e.target.checked
-                                                ? [...prev.assignedUsers, userId]
-                                                : prev.assignedUsers.filter(id => id !== userId)
-                                        }));
-                                    }}
-                                    className="mr-3"
-                                />
-                                <label htmlFor={`user-${user.user_id}`}>
-                                    {user.name}
-                                </label>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                        <h3 className="text-sm font-medium text-primary-500 mb-2">
-                            Usuarios seleccionados ({editedTask.assignedUsers.length}):
-                        </h3>
-                        <ul className="list-disc pl-5 text-secondary-700 space-y-1">
-                            {editedTask.assignedUsers.length === 0 ? (
-                                <li>No hay usuarios seleccionados</li>
-                            ) : (
-                                editedTask.assignedUsers.map((userId) => {
-                                    const user = availableUsers.find(
-                                        (u) => u.user_id.toString() === userId
-                                    );
-                                    return (
-                                        <li key={userId} className="flex justify-between items-center">
-                                            <span>{user ? user.name : 'Usuario desconocido'}</span>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setEditedTask(prev => ({
-                                                        ...prev,
-                                                        assignedUsers: prev.assignedUsers.filter(id => id !== userId)
-                                                    }));
-                                                }}
-                                                className="text-red-500 hover:text-red-700 text-sm"
-                                            >
-                                                Eliminar
-                                            </button>
-                                        </li>
-                                    );
-                                })
-                            )}
-                        </ul>
-                    </div>
-                </>
+                <div className="border border-gray-300 rounded-lg w-full p-3 max-h-[300px] overflow-y-auto">
+                    {availableUsers.map((user) => (
+                        <div key={user.user_id} className="flex items-center p-2 hover:bg-gray-50">
+                            <input
+                                type="checkbox"
+                                id={`user-${user.user_id}`}
+                                value={user.user_id.toString()}
+                                checked={editedTask.assignedUsers.includes(user.user_id.toString())}
+                                onChange={(e) => {
+                                    const userId = e.target.value;
+                                    setEditedTask(prev => ({
+                                        ...prev,
+                                        assignedUsers: e.target.checked
+                                            ? [...prev.assignedUsers, userId]
+                                            : prev.assignedUsers.filter(id => id !== userId)
+                                    }));
+                                }}
+                                className="mr-3"
+                            />
+                            <label htmlFor={`user-${user.user_id}`}>{user.name}</label>
+                        </div>
+                    ))}
+                </div>
             ) : (
                 <div className="flex flex-wrap gap-2">
                     {task.assignedUsers?.map((userId) => {
-                        const user = availableUsers.find(
-                            (u) => u.user_id.toString() === userId
-                        );
+                        const user = availableUsers.find((u) => u.user_id.toString() === userId);
                         return (
-                            <div
-                                key={userId}
-                                className="flex items-center bg-white px-4 py-2 rounded-lg shadow-sm"
-                            >
-                                <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center mr-2">
-                                    <FiUser className="w-4 h-4 text-primary-600" />
-                                </div>
+                            <div key={userId} className="flex items-center bg-white px-4 py-2 rounded-lg shadow-sm">
+                                <FiUser className="w-4 h-4 text-primary-600 mr-2" />
                                 <span className="text-sm font-medium text-gray-700">
                                     {user ? user.name : 'Usuario desconocido'}
                                 </span>
@@ -213,9 +238,10 @@ const TaskDetail = () => {
             )}
         </div>
     );
+
     if (loading) {
         return (
-            <div className="p-6 md:ml-64 flex justify-center items-center">
+            <div className="p-6 flex justify-center items-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
             </div>
         );
@@ -223,7 +249,7 @@ const TaskDetail = () => {
 
     if (error) {
         return (
-            <div className="p-6 md:ml-64 flex justify-center items-center">
+            <div className="p-6 flex justify-center items-center">
                 <p className="text-red-500">{error}</p>
             </div>
         );
@@ -235,9 +261,8 @@ const TaskDetail = () => {
         <div className="min-h-screen bg-gray-50 flex justify-center">
             <div className="w-full max-w-7xl px-4 sm:px-6 md:px-8 pt-6 pb-16">
                 <div className="max-w-6xl mx-auto">
-                    {/* Header */}
                     <div className="sticky top-0 z-10 bg-gray-50 py-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="flex items-center justify-between">
                             <div className="flex items-center">
                                 <button
                                     onClick={() => navigate(`/projects/${projectId}`)}
@@ -246,21 +271,20 @@ const TaskDetail = () => {
                                     <FiArrowLeft className="w-6 h-6" />
                                 </button>
                                 {!isEditing ? (
-                                    <h1 className="text-xl sm:text-2xl font-poppins font-bold text-primary-500">
-                                        {task.title}
-                                    </h1>
+                                    <h1 className="text-xl sm:text-2xl font-bold text-primary-500">{task.title}</h1>
                                 ) : (
                                     <input
                                         type="text"
                                         value={editedTask.title}
                                         onChange={(e) => setEditedTask({ ...editedTask, title: e.target.value })}
-                                        className="text-xl sm:text-2xl font-poppins font-bold text-primary-500 bg-transparent border-b border-primary-500 focus:outline-none"
+                                        className="text-xl sm:text-2xl font-bold bg-transparent border-b border-primary-500 focus:outline-none"
                                     />
                                 )}
                             </div>
 
-                            {userRole === 'admin' && !isEditing && (
-                                <div className="flex gap-2 sm:gap-4 ml-auto sm:ml-0">
+                            {/* Botones de edición/eliminación */}
+                            {canModifyTask() && !isEditing && (
+                                <div className="flex gap-2">
                                     <button
                                         onClick={handleEditClick}
                                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -279,7 +303,7 @@ const TaskDetail = () => {
                             )}
 
                             {isEditing && (
-                                <div className="flex gap-2 sm:gap-4 ml-auto sm:ml-0">
+                                <div className="flex gap-2">
                                     <button
                                         onClick={handleSaveEdit}
                                         className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
@@ -297,9 +321,7 @@ const TaskDetail = () => {
                         </div>
                     </div>
 
-                    {/* Contenido de la tarea */}
                     <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 md:p-8">
-                        {/* Estado y Prioridad */}
                         <div className="flex flex-wrap gap-4 mb-8">
                             <div className="w-full sm:w-auto">
                                 <div className="text-sm text-gray-500 mb-2">Estado</div>
@@ -315,22 +337,9 @@ const TaskDetail = () => {
                                         <option value="completed">Completada</option>
                                     </select>
                                 ) : (
-                                    <span
-                                        className={`inline-block px-4 py-2 rounded-lg text-sm font-medium
-                          ${task.status === 'completed'
-                                                ? 'bg-green-100 text-green-800'
-                                                : task.status === 'in_progress'
-                                                    ? 'bg-blue-100 text-blue-800'
-                                                    : task.status === 'blocked'
-                                                        ? 'bg-red-100 text-red-800'
-                                                        : 'bg-yellow-100 text-yellow-800'
-                                            }`}
-                                    >
-                                        {task.status}
-                                    </span>
+                                    <span className={`inline-block px-4 py-2 rounded-lg text-sm font-medium ${task.status === 'completed' ? 'bg-green-100 text-green-800' : task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : task.status === 'blocked' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>{task.status}</span>
                                 )}
                             </div>
-
                             <div className="w-full sm:w-auto">
                                 <div className="text-sm text-gray-500 mb-2">Prioridad</div>
                                 {isEditing ? (
@@ -344,47 +353,30 @@ const TaskDetail = () => {
                                         <option value="high">Alta</option>
                                     </select>
                                 ) : (
-                                    <span
-                                        className={`inline-block px-4 py-2 rounded-lg text-sm font-medium
-                          ${task.priority === 'high'
-                                                ? 'bg-red-100 text-red-800'
-                                                : task.priority === 'medium'
-                                                    ? 'bg-yellow-100 text-yellow-800'
-                                                    : 'bg-green-100 text-green-800'
-                                            }`}
-                                    >
-                                        {task.priority}
-                                    </span>
+                                    <span className={`inline-block px-4 py-2 rounded-lg text-sm font-medium ${task.priority === 'high' ? 'bg-red-100 text-red-800' : task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>{task.priority}</span>
                                 )}
                             </div>
                         </div>
 
-                        {/* Descripción */}
                         <div className="mb-8">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Descripción</h2>
                             <div className="bg-gray-50 rounded-lg p-6">
                                 {isEditing ? (
                                     <textarea
                                         value={editedTask.description}
-                                        onChange={(e) =>
-                                            setEditedTask({ ...editedTask, description: e.target.value })
-                                        }
+                                        onChange={(e) => setEditedTask({ ...editedTask, description: e.target.value })}
                                         className="w-full h-32 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                                     />
                                 ) : (
-                                    <p className="text-gray-600 whitespace-pre-line">
-                                        {task.description || 'Sin descripción'}
-                                    </p>
+                                    <p className="text-gray-600 whitespace-pre-line">{task.description || 'Sin descripción'}</p>
                                 )}
                             </div>
                         </div>
 
-                        {/* Fechas e Información */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                             <div className="bg-gray-50 rounded-lg p-6">
                                 <h3 className="text-sm font-medium text-gray-500 mb-4">Información</h3>
                                 <div className="space-y-4">
-                                    {/* Fecha límite */}
                                     <div className="flex items-center text-gray-600">
                                         <FiCalendar className="w-5 h-5 mr-3 text-primary-500" />
                                         <div>
@@ -393,19 +385,14 @@ const TaskDetail = () => {
                                                 <input
                                                     type="date"
                                                     value={editedTask.due_date}
-                                                    onChange={(e) =>
-                                                        setEditedTask({ ...editedTask, due_date: e.target.value })
-                                                    }
+                                                    onChange={(e) => setEditedTask({ ...editedTask, due_date: e.target.value })}
                                                     className="border rounded-lg p-1"
                                                 />
                                             ) : (
-                                                <div className="font-medium">
-                                                    {new Date(task.due_date).toLocaleDateString()}
-                                                </div>
+                                                <div className="font-medium">{new Date(task.due_date).toLocaleDateString()}</div>
                                             )}
                                         </div>
                                     </div>
-                                    {/* Horas estimadas */}
                                     <div className="flex items-center text-gray-600">
                                         <FiClock className="w-5 h-5 mr-3 text-primary-500" />
                                         <div>
@@ -415,9 +402,7 @@ const TaskDetail = () => {
                                                     type="number"
                                                     min="0"
                                                     value={editedTask.estimated_hours}
-                                                    onChange={(e) =>
-                                                        setEditedTask({ ...editedTask, estimated_hours: parseInt(e.target.value) })
-                                                    }
+                                                    onChange={(e) => setEditedTask({ ...editedTask, estimated_hours: parseInt(e.target.value) })}
                                                     className="border rounded-lg p-1"
                                                 />
                                             ) : (
@@ -428,55 +413,10 @@ const TaskDetail = () => {
                                 </div>
                             </div>
 
-                            {/* Usuarios asignados */}
                             {renderAssignedUsers()}
                         </div>
-                        <div className="mt-8">
-                            <button
-                                onClick={() => setShowDocumentUploadModal(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-                            >
-                                <FiPlus className="w-4 h-4" />
-                                Subir Documento
-                            </button>
 
-                            <div className="mt-4 bg-gray-50 rounded-xl">
-                                {documents.length === 0 ? (
-                                    <div className="p-8 text-center">
-                                        <p className="text-gray-500">No hay documentos subidos aún.</p>
-                                    </div>
-                                ) : (
-                                    <div className="divide-y divide-gray-200">
-                                        {documents.map((document) => (
-                                            <div
-                                                key={document.document_id}
-                                                className="p-4 sm:p-6 hover:bg-white transition-colors duration-200 cursor-pointer"
-                                                onClick={() => window.open(document.file_path, '_blank')}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <h3 className="text-lg font-medium text-gray-900">
-                                                        {document.title}
-                                                    </h3>
-                                                    <span className="text-sm text-gray-500">
-                                                        {document.file_type || 'Archivo'}
-                                                    </span>
-                                                </div>
-                                                <p className="text-sm text-gray-600 mt-2">
-                                                    Subido por: {document.uploaded_by || 'Desconocido'}
-                                                </p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {showDocumentUploadModal && (
-                            <DocumentUploadModal
-                                onSubmit={handleDocumentUpload}
-                                onClose={() => setShowDocumentUploadModal(false)}
-                            />
-                        )}
+                        {renderDocumentsSection()}
 
                         <DeleteConfirmationModal
                             isOpen={showDeleteModal}
@@ -485,8 +425,14 @@ const TaskDetail = () => {
                             title="Eliminar Tarea"
                             message="¿Estás seguro de que deseas eliminar esta tarea? Esta acción no se puede deshacer."
                         />
+                        {showDocumentUploadModal && (
+                            <DocumentUploadModal
+                                taskId={taskId}
+                                onSubmit={handleDocumentUpload}
+                                onClose={() => setShowDocumentUploadModal(false)}
+                            />
+                        )}
 
-                        {/* Acciones */}
                         <div className="flex flex-wrap gap-4 justify-end border-t pt-6">
                             <button
                                 onClick={() => navigate(`/projects/${projectId}`)}
@@ -503,4 +449,3 @@ const TaskDetail = () => {
 };
 
 export default TaskDetail;
-

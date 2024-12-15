@@ -1,19 +1,39 @@
-// components/Navbar.jsx
-import { useState } from 'react';
-import { ChevronDown, Menu } from 'lucide-react';
-import PropTypes from 'prop-types';
-import Notifications from './Notifications';
+import React, { useState } from "react";
+import { ChevronDown, Menu } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import useStore from '../store/store';
+import NotificationBell from './NotificationBell';
+import NotificationDropdown from '../components/NotificationsDropdown';
 
 const Navbar = ({ isOpen, setIsOpen }) => {
+  const navigate = useNavigate();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-  const user = useStore((state) => state.user);
-  const logout = useStore((state) => state.logout);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const user = useStore(state => state.user);
+  const logout = useStore(state => state.logout);
 
   const toggleProfileDropdown = () => {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
+    setIsNotificationsOpen(false);
   };
 
+  const toggleNotifications = () => {
+    setIsNotificationsOpen(!isNotificationsOpen);
+    setIsProfileDropdownOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setIsProfileDropdownOpen(false);
+    navigate('/login');
+  };
+
+  const handleNavigateToProfile = () => {
+    setIsProfileDropdownOpen(false);
+    navigate('/profile');
+  };
+
+  // Función para obtener las iniciales
   const getInitials = () => {
     if (!user) return 'U';
     return `${user.first_name?.charAt(0) || ''}${user.last_name?.charAt(0) || ''}`.toUpperCase();
@@ -43,8 +63,18 @@ const Navbar = ({ isOpen, setIsOpen }) => {
       </div>
 
       <div className="flex items-center space-x-2 sm:space-x-4">
-        <Notifications />
+        {/* Notifications - Solo mostrar si hay usuario logueado */}
+        {user && (
+          <div className="relative">
+            <NotificationBell onClick={toggleNotifications} />
+            <NotificationDropdown
+              isOpen={isNotificationsOpen}
+              onClose={() => setIsNotificationsOpen(false)}
+            />
+          </div>
+        )}
 
+        {/* Profile Section */}
         <div className="relative">
           <button
             onClick={toggleProfileDropdown}
@@ -65,7 +95,7 @@ const Navbar = ({ isOpen, setIsOpen }) => {
                 <div className="px-4 py-2 text-sm text-gray-500">{user?.email}</div>
                 <hr />
                 <button
-                  onClick={() => setIsProfileDropdownOpen(false)}
+                  onClick={handleNavigateToProfile}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Mi Perfil
@@ -77,10 +107,7 @@ const Navbar = ({ isOpen, setIsOpen }) => {
                   Configuración
                 </button>
                 <button
-                  onClick={() => {
-                    logout();
-                    setIsProfileDropdownOpen(false);
-                  }}
+                  onClick={handleLogout}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Cerrar sesión

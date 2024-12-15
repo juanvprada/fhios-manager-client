@@ -9,7 +9,6 @@ const NewProject = () => {
   const { token } = useStore();
   const { user } = useStore();
 
-
   // Estados
   const [projectName, setProjectName] = useState("");
   const [duration, setDuration] = useState({ start: "", end: "" });
@@ -78,11 +77,9 @@ const NewProject = () => {
     }
   };
 
-
-
   return (
-    <div className="flex justify-center items-start min-h-screen bg-gray-50 overflow-x-hidden">
-      <div className="max-w-xl w-full p-6 sm:p-8 box-border">
+    <div className="flex justify-center items-start min-h-screen bg-gray-50 overflow-x-hidden p-4 sm:p-6">
+      <div className="max-w-xl w-full bg-white p-6 rounded-lg shadow-lg">
         <h1 className="text-2xl text-center font-poppins font-bold text-primary-500 mb-4">
           Crear Nuevo Proyecto
         </h1>
@@ -104,8 +101,8 @@ const NewProject = () => {
           </div>
 
           {/* Duración del Proyecto */}
-          <div className="flex space-x-4">
-            <div className="w-1/2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
               <label className="block text-sm font-medium text-primary-500 mb-2">
                 Fecha de Inicio:
               </label>
@@ -117,7 +114,7 @@ const NewProject = () => {
                 required
               />
             </div>
-            <div className="w-1/2">
+            <div>
               <label className="block text-sm font-medium text-primary-500 mb-2">
                 Fecha de Fin:
               </label>
@@ -197,40 +194,6 @@ const NewProject = () => {
                       </label>
                     </div>
                   ))}
-                </div>
-
-                {/* Lista de usuarios seleccionados */}
-                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                  <h3 className="text-sm font-medium text-primary-500 mb-2">
-                    Usuarios seleccionados ({selectedUsers.length}):
-                  </h3>
-                  <ul className="list-disc pl-5 text-secondary-700 space-y-1">
-                    {selectedUsers.length === 0 ? (
-                      <li>No hay usuarios seleccionados</li>
-                    ) : (
-                      selectedUsers.map((userId) => {
-                        const user = users.find(
-                          (u) => u.user_id.toString() === userId
-                        );
-                        return (
-                          <li key={userId} className="flex justify-between items-center">
-                            <span>
-                              {user ? `${user.first_name} ${user.last_name}` : "Usuario desconocido"}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedUsers(selectedUsers.filter(id => id !== userId));
-                              }}
-                              className="text-red-500 hover:text-red-700 text-sm"
-                            >
-                              Eliminar
-                            </button>
-                          </li>
-                        );
-                      })
-                    )}
-                  </ul>
                 </div>
               </>
             )}

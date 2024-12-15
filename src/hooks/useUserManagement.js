@@ -5,14 +5,15 @@ import axios from 'axios';
 
 const useUserManagement = () => {
   const [users, setUsers] = useState([]);
-  const [userRoles, setUserRoles] = useState({});
+  const [roles, setRoles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');
   const [selectedUser, setSelectedUser] = useState(null);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [roles, setRoles] = useState([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
 
   const token = useStore(state => state.token);
   const isAuthenticated = useStore(state => state.isAuthenticated); // Obtener del store
@@ -26,19 +27,61 @@ const useUserManagement = () => {
     }
   }), [token]);
 
-  const fetchData = useCallback(async () => {  // Agregado useCallback aquí
-    if (!isAuthenticated || !token) {
-      setError("No estás autenticado");
-      return;
-    }
-
+  const fetchData = async () => {
     try {
-      setLoading(true);
+      if (!token) {
+        setError("No estás autenticado");
+        return;
+      }
 
-      // Obtener roles disponibles
-      const rolesResponse = await axios.get(`${API_URL}/api/roles`, getHeaders());
-      console.log('Respuesta de roles:', rolesResponse.data);
-      const rolesData = rolesResponse.data.data || rolesResponse.data || [];
+      setLoading(true);
+      const [usersResponse, rolesResponse, userRolesResponse] = await Promise.all([
+        axios.get(`${API_URL}/users`, getHeaders()),
+        axios.get(`${API_URL}/roles`, getHeaders()),
+        axios.get(`${API_URL}/user_roles`, getHeaders())
+      ]);
+
+      console.log('Datos recibidos:', {
+        users: usersResponse.data,
+        roles: rolesResponse.data,
+        userRoles: userRolesResponse.data
+      });
+
+      const usersData = usersResponse.data || [];
+      const rolesData = rolesResponse.data || [];
+      const userRolesData = userRolesResponse.data || [];
+
+      // Crear un mapa de roles para búsqueda rápida
+      const rolesMap = rolesData.reduce((acc, role) => {
+        acc[role.role_id] = role.role_name;
+        return acc;
+      }, {});
+
+      console.log('Mapa de roles:', rolesMap);
+
+      // Combinar usuarios con sus roles
+      const usersWithRoles = usersData.map(user => {
+        const userRole = userRolesData.find(ur => ur.user_id === user.user_id);
+        console.log('Procesando usuario:', {
+          userId: user.user_id,
+          foundUserRole: userRole,
+          assignedRoleName: userRole ? rolesMap[userRole.role_id] : 'Sin rol'
+        });
+
+        return {
+          ...user,
+          user_id: user.user_id,
+          name: `${user.first_name} ${user.last_name}`,
+          email: user.email,
+          role: userRole ? rolesMap[userRole.role_id] : 'Sin rol',
+          role_id: userRole?.role_id,
+          created_at: user.created_at,
+          status: user.status
+        };
+      });
+
+      console.log('Usuarios procesados:', usersWithRoles);
+
       setRoles(rolesData);
 
       // Obtener usuarios
@@ -127,11 +170,17 @@ const useUserManagement = () => {
   // Manejar eliminación de usuarios
   const handleDeleteUser = async (userId) => {
     try {
-      await axios.delete(`${API_URL}/users/${userId}`, getHeaders());
-      fetchData();
+      setLoading(true);
+
+      
+      setUsers(prevUsers => prevUsers.filter(user => user.user_id !== userId));
+      setShowDeleteModal(false);
+      setUserToDelete(null);
     } catch (error) {
       console.error('Error al eliminar usuario:', error);
-      throw new Error(error.response?.data?.message || 'Error al eliminar el usuario');
+      setError('No se pudo eliminar el usuario de la lista. Por favor, inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -147,6 +196,10 @@ const useUserManagement = () => {
     setShowRoleModal,
     filteredUsers,
     handleRoleChange,
+    showDeleteModal,
+    setShowDeleteModal,
+    userToDelete,
+    setUserToDelete,
     handleDeleteUser,
     loading,
     error,

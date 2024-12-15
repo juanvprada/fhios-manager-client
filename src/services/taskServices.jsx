@@ -12,9 +12,22 @@ const getAuthHeader = () => {
         }
     };
 };
+// Función para obtener documentos
+export const getTaskDocuments = async (taskId) => {
+    try {
+        const response = await axios.get(
+            `${API_URL}/tasks/${taskId}/documents`,
+            getAuthHeader()
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error al obtener documentos:', error);
+        throw error;
+    }
+};
 
 export const createTask = async (projectId, taskData) => {
-    let processedTaskData = { 
+    let processedTaskData = {
         ...taskData,
         project_id: projectId
     };
@@ -38,7 +51,7 @@ export const createTask = async (projectId, taskData) => {
     // Procesamos la respuesta para incluir todos los usuarios asignados
     const assignedUsersMatch = response.data.description?.match(/<!--ASSIGNED_USERS:(.*?)-->/);
     const assignedUsers = assignedUsersMatch ? assignedUsersMatch[1].split('|') : [response.data.assigned_to];
-    
+
     return {
         ...response.data,
         description: response.data.description?.replace(/<!--ASSIGNED_USERS:.*?-->/, '').trim(),
@@ -56,7 +69,7 @@ export const getProjectTasks = async (projectId) => {
     return response.data.map(task => {
         const assignedUsersMatch = task.description?.match(/<!--ASSIGNED_USERS:(.*?)-->/);
         const assignedUsers = assignedUsersMatch ? assignedUsersMatch[1].split('|') : [task.assigned_to];
-        
+
         return {
             ...task,
             description: task.description?.replace(/<!--ASSIGNED_USERS:.*?-->/, '').trim(),
@@ -73,8 +86,8 @@ export const getTaskById = async (taskId) => {
 
     // Procesar la tarea para extraer los usuarios asignados
     const assignedUsersMatch = response.data.description?.match(/<!--ASSIGNED_USERS:(.*?)-->/);
-    const assignedUsers = assignedUsersMatch ? 
-        assignedUsersMatch[1].split('|') : 
+    const assignedUsers = assignedUsersMatch ?
+        assignedUsersMatch[1].split('|') :
         [response.data.assigned_to];
 
     return {
@@ -114,8 +127,36 @@ export const updateTask = async (taskId, taskData) => {
 };
 
 export const deleteTask = async (taskId) => {
-    await axios.delete(
-        `${API_URL}/tasks/${taskId}`,
-        getAuthHeader()
-    );
+    try {
+        const token = useStore.getState().token;
+        if (!token) {
+            throw new Error('No hay token de autenticación');
+        }
+
+        // Primero obtener los documentos asociados a la tarea
+        const documents = await getTaskDocuments(taskId);
+
+        // Si hay documentos, eliminarlos primero
+        if (documents && documents.length > 0) {
+            await Promise.all(
+                documents.map(doc =>
+                    axios.delete(
+                        `${API_URL}/documents/${doc.document_id}`,
+                        getAuthHeader()
+                    )
+                )
+            );
+        }
+
+        // Luego eliminar la tarea
+        const response = await axios.delete(
+            `${API_URL}/tasks/${taskId}`,
+            getAuthHeader()
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error('Error al eliminar la tarea:', error);
+        throw error.response?.data || error;
+    }
 };
