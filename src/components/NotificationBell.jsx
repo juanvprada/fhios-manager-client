@@ -10,18 +10,15 @@ const NotificationBell = ({ onClick }) => {
 
     useEffect(() => {
         if (user?.id) {
-            console.log('Inicializando notificaciones para usuario:', user.id);
             fetchUnreadNotifications(user.id);
 
             socket.on(`notification:${user.id}`, (notification) => {
-                console.log('Nueva notificación recibida:', notification);
                 addNotification(notification);
             });
         }
 
         return () => {
             if (user?.id) {
-                console.log('Limpiando listeners de socket para usuario:', user.id);
                 socket.off(`notification:${user.id}`);
             }
         };

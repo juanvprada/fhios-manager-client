@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import LoginForm from '../../pages/LoginForm';
 import useStore from '../../store/store';
 
@@ -15,8 +15,9 @@ jest.mock('../../store/store', () => ({
   default: jest.fn(() => ({ login: jest.fn() })),
 }));
 
-// Mock useNavigate
+// Mock navigate function
 jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
   useNavigate: jest.fn(),
 }));
 
@@ -27,10 +28,15 @@ describe('LoginForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useStore.mockReturnValue({ login: mockLogin });
-    useNavigate.mockReturnValue(mockNavigate);
+    require('react-router-dom').useNavigate.mockReturnValue(mockNavigate);
   });
 
-  const renderComponent = () => render(<LoginForm />);
+  const renderComponent = () =>
+    render(
+      <MemoryRouter>
+        <LoginForm />
+      </MemoryRouter>
+    );
 
   test('renders correctly', () => {
     renderComponent();
@@ -92,9 +98,12 @@ describe('LoginForm', () => {
 
     // Wait for the error message
     await waitFor(() => {
-      expect(screen.getByText('Error al obtener información del usuario')).toBeInTheDocument();
+      expect(
+        screen.getByText('Error al obtener información del usuario')
+      ).toBeInTheDocument();
     });
 
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 });
+
