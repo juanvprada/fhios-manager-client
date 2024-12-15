@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import useStore from '../store/store.js';
 import axios from 'axios';
 
@@ -14,28 +14,28 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!email || !password) {
       setError('Por favor, completa todos los campos.');
       return;
     }
-  
+
     try {
-      const loginResponse = await axios.post('http://localhost:3000/api/auth/login', { 
-        email, 
-        password 
+      const loginResponse = await axios.post('http://localhost:3000/api/auth/login', {
+        email,
+        password
       });
-  
+
       if (loginResponse.data.token) {
         const { token, role } = loginResponse.data; // Extraemos también el role
-        
+
         // Configurar axios con el token
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        
+
         try {
           const userResponse = await axios.get('http://localhost:3000/api/auth/profile');
           console.log('Profile Response:', userResponse.data);
-  
+
           if (userResponse.data.data) {
             // Pasar también el role al login
             login(userResponse.data.data, token, role);
@@ -57,19 +57,19 @@ const LoginForm = () => {
   };
 
   return (
-    <div 
-      className="flex justify-center items-center h-screen bg-cover bg-center" 
+    <div
+      className="flex justify-center items-center h-screen bg-cover bg-center"
       style={{ backgroundImage: 'url("../src/assets/Onda_inicio.webp")' }}
     >
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-4">
           Bienvenido
         </h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label 
-              htmlFor="email" 
+            <label
+              htmlFor="email"
               className="block text-red-500 font-medium mb-2"
             >
               Correo electrónico:
@@ -84,10 +84,10 @@ const LoginForm = () => {
               required
             />
           </div>
-          
+
           <div>
-            <label 
-              htmlFor="password" 
+            <label
+              htmlFor="password"
               className="block text-red-500 font-medium mb-2"
             >
               Contraseña:
@@ -108,20 +108,20 @@ const LoginForm = () => {
               {error}
             </p>
           )}
-          
+
           <button
             type="submit"
             className="w-full bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition duration-300"
           >
             Iniciar sesión
           </button>
-          
-          <a 
-            href="/forgot-password" 
+
+          <Link
+            to="/forgot-password"
             className="block text-center text-blue-500 mt-4 hover:text-blue-600 hover:underline"
           >
             ¿Olvidaste tu contraseña?
-          </a>
+          </Link>
         </form>
       </div>
     </div>

@@ -13,6 +13,7 @@ import CreateRole from '../pages/CreateRole';
 import RolesManagement from "../pages/RolesManagement";
 import Profile from "../pages/Profile";
 import useStore from '../store/store';
+import ForgotPassword from "../pages/ForgotPassword";
 
 export const router = createBrowserRouter([
   {
@@ -42,6 +43,10 @@ export const router = createBrowserRouter([
             <Profile />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: "forgot-password",
+        element: <ForgotPassword />,
       },
       {
         path: "roles/create",
