@@ -43,15 +43,15 @@ const LoginForm = () => {
             setError('Error al obtener datos del usuario');
           }
         } catch (profileError) {
-          console.error("Error al obtener perfil:", profileError);
-          setError("Error al obtener información del usuario");
+          console.error('Error al obtener perfil:', profileError);
+          setError('Error al obtener información del usuario');
         }
       } else {
-        setError("Credenciales inválidas");
+        setError('Error en la respuesta del servidor');
       }
     } catch (error) {
-      console.error("Error de login:", error);
-      setError("Credenciales inválidas");
+      console.error('Error de autenticación:', error);
+      setError(error.response?.data?.error || 'Error al conectar con el servidor');
     }
   };
 
