@@ -1,83 +1,54 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { getUsers, getAllUserRoles } from '../services/usersServices';
 import useStore from '../store/store';
+import axios from 'axios';
 
 const useUserManagement = () => {
   const [users, setUsers] = useState([]);
-  const [roles, setRoles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');
   const [selectedUser, setSelectedUser] = useState(null);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [userToDelete, setUserToDelete] = useState(null);
 
   const token = useStore(state => state.token);
   const API_URL = 'http://localhost:3000/api';
 
-  const getHeaders = () => ({
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  const fetchData = async () => {
-    try {
-      if (!token) {
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!isAuthenticated || !token) {
         setError("No estás autenticado");
         return;
       }
 
-      setLoading(true);
-      const [usersResponse, rolesResponse, userRolesResponse] = await Promise.all([
-        axios.get(`${API_URL}/users`, getHeaders()),
-        axios.get(`${API_URL}/roles`, getHeaders()),
-        axios.get(`${API_URL}/user_roles`, getHeaders())
-      ]);
+      try {
+        setLoading(true);
+        const [usersData, rolesData] = await Promise.all([
+          getUsers(),
+          getAllUserRoles()
+        ]);
 
-      const usersData = usersResponse.data || [];
-      const rolesData = rolesResponse.data || [];
-      const userRolesData = userRolesResponse.data || [];
-
-      // Crear un mapa de roles para búsqueda rápida
-      const rolesMap = rolesData.reduce((acc, role) => {
-        acc[role.role_id] = role.role_name;
-        return acc;
-      }, {});
-
-
-      // Combinar usuarios con sus roles
-      const usersWithRoles = usersData.map(user => {
-        const userRole = userRolesData.find(ur => ur.user_id === user.user_id);
-
-        return {
+        // Mapear usuarios con sus nombres completos
+        const formattedUsers = usersData.map(user => ({
           ...user,
-          user_id: user.user_id,
+          id: user.user_id,
           name: `${user.first_name} ${user.last_name}`,
-          email: user.email,
-          role: userRole ? rolesMap[userRole.role_id] : 'Sin rol',
-          role_id: userRole?.role_id,
-          created_at: user.created_at,
-          status: user.status
-        };
-      });
+          role: rolesData.find(role => role.user_id === user.user_id)?.role_name || 'Sin rol'
+        }));
 
-      setRoles(rolesData);
-      setUsers(usersWithRoles);
-      setError(null);
-    } catch (error) {
-      console.error('Error al cargar datos:', error);
-      setError(error.response?.data?.message || 'Error al cargar los datos');
-    } finally {
-      setLoading(false);
-    }
-  };
-  useEffect(() => {
+        setUsers(formattedUsers);
+        setError(null);
+      } catch (error) {
+        console.error('Error al cargar datos:', error);
+        setError(error.response?.data?.message || 'Error al cargar los datos');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchData();
-  }, [token]);
+  }, [isAuthenticated, token]);
 
   const filteredUsers = users?.filter((user) =>
     (user.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
@@ -88,21 +59,22 @@ const useUserManagement = () => {
     return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
   });
 
-  const handleRoleChange = async (userId, roleId) => {
+  // Manejar cambios de rol
+  const handleRoleChange = async (userId, newRole) => {
     try {
-      await axios.post(`${API_URL}/user_roles`, {
-        user_id: userId,
-        role_id: roleId
-      }, getHeaders());
-
-      await fetchData();
+      const updatedUser = await updateUser(userId, { role: newRole });
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, role: updatedUser.role } : user
+        )
+      );
       setShowRoleModal(false);
     } catch (error) {
       console.error('Error al cambiar el rol:', error);
-      throw new Error(error.response?.data?.message || 'Error al gestionar el rol');
     }
   };
 
+  // Manejar eliminación de usuarios
   const handleDeleteUser = async (userId) => {
     try {
       setLoading(true);
@@ -113,12 +85,51 @@ const useUserManagement = () => {
       setUserToDelete(null);
     } catch (error) {
       console.error('Error al eliminar usuario:', error);
-      setError('No se pudo eliminar el usuario de la lista. Por favor, inténtalo de nuevo.');
-    } finally {
-      setLoading(false);
     }
   };
 
+  const handleUpdateUser = async (userData) => {
+    try {
+      // Preparar los datos para la actualización
+      const updateData = {
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        email: userData.email,
+        status: userData.status
+      };
+  
+      // Si hay una nueva contraseña, la incluimos
+      if (userData.password) {
+        updateData.password = userData.password;
+      }
+  
+      const response = await axios.put(
+        `http://localhost:5000/api/users/${userData.user_id}`,
+        updateData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+  
+      // Actualizar la lista de usuarios
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.user_id === userData.user_id 
+            ? { ...user, ...response.data.data }
+            : user
+        )
+      );
+  
+      return response.data;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      throw new Error(error.response?.data?.message || 'Error al actualizar usuario');
+    }
+  };
+  
+  // Agregar handleUpdateUser al return del hook
   return {
     searchTerm,
     setSearchTerm,
@@ -135,10 +146,9 @@ const useUserManagement = () => {
     userToDelete,
     setUserToDelete,
     handleDeleteUser,
+    handleUpdateUser, // Agregar esta línea
     loading,
-    error,
-    roles,
-    users
+    error
   };
 };
 

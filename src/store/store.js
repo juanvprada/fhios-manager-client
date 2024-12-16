@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const initialState = {
+  user: null,
+  token: null,
+  isAuthenticated: false,
+  userRoles: []
+};
+
 const useStore = create(
   persist(
     (set) => ({
