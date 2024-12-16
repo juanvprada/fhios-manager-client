@@ -57,7 +57,7 @@ const LoginForm = () => {
 
   return (
     <div
-      className="flex justify-center items-center h-screen bg-cover bg-center"
+      className="flex justify-center items-center min-h-screen bg-[length:100%_50%] bg-no-repeat bg-top"
       style={{ backgroundImage: 'url("../src/assets/Onda_inicio.webp")' }}
     >
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
