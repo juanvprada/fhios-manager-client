@@ -17,12 +17,8 @@ import ForgotPassword from "../pages/ForgotPassword";
 
 export const router = createBrowserRouter([
   {
-    path: "/login",
-    element: <LoginForm />,
-  },
-  {
     path: "/",
-    element: <ProtectedRoute><Layout /></ProtectedRoute>,
+    element: <Layout />,
     children: [
       {
         index: true,
@@ -62,9 +58,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "projects",
-        element: <ProtectedRoute requiredPermission="canViewProjects">
-          <Outlet />
-        </ProtectedRoute>,
+        element: <ProtectedRoute />,
         children: [
           {
             index: true,
@@ -72,9 +66,7 @@ export const router = createBrowserRouter([
           },
           {
             path: "nuevo",
-            element: <ProtectedRoute requiredPermission="canCreateProjects">
-              <NewProject />
-            </ProtectedRoute>,
+            element: <NewProject />,
           },
         ],
       },
@@ -88,26 +80,14 @@ export const router = createBrowserRouter([
       },
       {
         path: "users",
-        element: <ProtectedRoute requiredPermission="canManageUsers">
-          <UserManagement />
-        </ProtectedRoute>,
-      },
-      {
-        path: "roles",
-        element: <ProtectedRoute requiredPermission="canManageRoles">
-          <Outlet />
-        </ProtectedRoute>,
+        element: <ProtectedRoute adminOnly={true} />,
         children: [
           {
             index: true,
-            element: <RolesManagement />,
+            element: <UserManagement />,
           },
-          {
-            path: "create",
-            element: <CreateRole />
-          }
         ],
-      }
+      },
     ],
   },
 ]);
