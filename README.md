@@ -7,7 +7,7 @@ En un mundo cada vez más dinámico y conectado, la eficiencia en la gestión de
 Fue en este contexto cuando Fhios confió en nosotros para desarrollar una solución a medida que pudiera abordar sus necesidades específicas. FHIOS Manager nació de esa confianza y de la visión compartida de un equipo que, con pasión y dedicación, trabajó incansablemente para ofrecer algo más que una simple herramienta de gestión de proyectos.
 
 Nos propusimos crear una plataforma que no solo respondiera a los requisitos técnicos del cliente, sino que también mejorara la experiencia de todos los usuarios que interactuarían con ella. Desde los desarrolladores hasta los líderes de proyecto, cada rol y función fue diseñado para facilitar el trabajo en equipo, el seguimiento de tareas y la creación de reportes.
-FHIOS Manager no es solo un gestor de proyectos, es el resultado de un esfuerzo conjunto de un equipo talentoso que, inspirado en metodologías ágiles como Scrum y Kanban, creó una herramienta poderosa y fácil de usar, construida sobre una arquitectura robusta y flexible.
+FHIOS Manager no es solo un gestor de proyectos, es el resultado de un esfuerzo conjunto de un equipo talentoso que, inspirado en metodologías ágiles como Kanban, creó una herramienta poderosa y fácil de usar, construida sobre una arquitectura robusta y flexible.
 
 Hoy, estamos orgullosos de presentar esta plataforma a Fhios, confiando en que será un catalizador para una mayor productividad, comunicación fluida y gestión efectiva de proyectos. Y, lo más importante, es que esta solución fue posible gracias al talento y esfuerzo de un equipo comprometido con cada detalle.
 Este es solo el principio de un viaje, y con FHIOS Manager, estamos convencidos de que las posibilidades para Fhios son infinitas. 🚀
@@ -50,7 +50,7 @@ Este es solo el principio de un viaje, y con FHIOS Manager, estamos convencidos 
 
 - 📋 **Trello**: Gestión del flujo de trabajo.
   
-- 🔄 **Scrum/Kanban**: Métodos ágiles para la organización de tareas.
+- 🔄 **Kanban**: Métodos ágiles para la organización de tareas.
   
 ### Pruebas:  
 
